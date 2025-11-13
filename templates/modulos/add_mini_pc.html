@@ -106,14 +106,14 @@
 
     <!-- UNIVE -->
     <div>
-      <label for="unive" class="block text-gray-700 text-sm italic mb-2">UNIVE</label>
-      <input type="text" id="unive" name="unive" required
-             value="{{ form.unive.value|default_if_none:'' }}"
-             placeholder="UNIVE"
+      <label for="unive" class="block text-gray-700 text-sm italic mb-2">Etiqueta</label>
+      <input type="text" id="etiqueta" name="etiqueta" required
+             value="{{ form.etiqueta.value|default_if_none:'' }}"
+             placeholder="ETIQUETA"
              class="w-full rounded-md border-gray-300 shadow-sm">
-      {% if form.unive.errors %}
+      {% if form.etiqueta.errors %}
         <div class="text-orange-600 text-sm mt-1">
-          {{ form.unive.errors|join:", " }}
+          {{ form.etiqueta.errors|join:", " }}
         </div>
       {% endif %}
     </div>

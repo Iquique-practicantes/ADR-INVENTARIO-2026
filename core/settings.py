@@ -112,7 +112,7 @@ DATABASES = {
         'USER': config('DB_USER'),
         'PASSWORD': config('DB_PASSWORD'),
         'HOST': config('DB_HOST'),
-        'PORT': config('DB_PORT', cast=int),
+        'PORT': config('DB_PORT', default='3306'),
         'OPTIONS': {
             'ssl': {'ssl': {}}  # o especificar CA si Clever-Cloud te lo da
         }
@@ -221,4 +221,3 @@ LOGIN_LOCK_SECONDS = 60
 BACKUP_DIR = config('BACKUP_DIR', default=os.path.join(BASE_DIR, 'backups'))
 
 PASSWORD_RESET_TIMEOUT = 60 * 60       # (opcional) 1 hora de validez del link
-

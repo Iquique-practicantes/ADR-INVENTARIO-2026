@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
                 ('activo', models.CharField(max_length=150, verbose_name='Activo')),
                 ('modelo', models.CharField(max_length=100, verbose_name='Modelo')),
                 ('n_serie', models.CharField(max_length=100, verbose_name='Número Serie')),
-                ('unive', models.CharField(max_length=100, verbose_name='UNIVE')),
+                ('etiqueta', models.CharField(max_length=100, verbose_name='Etiqueta')),
                 ('bdo', models.DecimalField(blank=True, decimal_places=0, max_digits=30, null=True, verbose_name='BDO')),
                 ('estado', models.CharField(max_length=100, verbose_name='Estado')),
                 ('marca', models.CharField(max_length=100, verbose_name='Marca')),
