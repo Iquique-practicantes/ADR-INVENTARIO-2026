@@ -124,19 +124,19 @@
     {% endif %}
   </div>
 
-  <!-- Segunda fila: UNIVE, BDO, NetBios -->
+  <!-- Segunda fila: ETIQUETA, BDO, NetBios -->
 
-  <!--UNIVE-->
+  <!--ETIQUETA-->
 
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
     <div>
-      <label for="unive" class="block text-black text-sm font-sans italic mb-1">UNIVE</label>
-      <input type="text" name="unive" id="unive" required
-             value="{{ form.unive.value|default:'' }}"
-             class="w-full rounded-md shadow-sm {% if form.unive.errors %}border-red-500 bg-red-50{% else %}border-gray-300{% endif %}"
-             placeholder="UNIVE">
-      {% if form.unive.errors %}
-        <div class="text-yellow-300 text-sm mt-1">{{ form.unive.errors|join:", " }}</div>
+      <label for="etiqueta" class="block text-black text-sm font-sans italic mb-1">ETIQUETA</label>
+      <input type="text" name="etiqueta" id="etiqueta" required
+             value="{{ form.etiqueta.value|default:'' }}"
+             class="w-full rounded-md shadow-sm {% if form.etiqueta.errors %}border-red-500 bg-red-50{% else %}border-gray-300{% endif %}"
+             placeholder="ETIQUETA">
+      {% if form.etiqueta.errors %}
+        <div class="text-yellow-300 text-sm mt-1">{{ form.etiqueta.errors|join:", " }}</div>
       {% endif %}
     </div>
 

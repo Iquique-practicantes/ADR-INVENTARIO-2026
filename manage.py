@@ -15,6 +15,11 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+import pymysql
+
+# Configurar PyMySQL como reemplazo de mysqlclient y ajustar versión
+pymysql.version_info = (2, 2, 2, "final", 0)
+pymysql.install_as_MySQLdb()
 
 
 def main():

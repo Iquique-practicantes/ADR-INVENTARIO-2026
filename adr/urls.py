@@ -8,13 +8,15 @@ from .views import (
     LoginView, AddUserView, IndexView, ProfileListView, ProfileUpdateView, ProfileDeleteView, HomeView, CustomLoginView, HistorialCambiosView,
     ProfilePasswordChangeView,
     AllInOneView, Add_AllInOneView, Edit_AllInOneView,
-    AllInOneAdminView, Add_AllInOneAdminView, Edit_AllInOneAdmView,
+    AllInOneAdminView, Add_AllInOneAdminView, Edit_AllInOneAdmView, Add_SwitchDeRed,
     NotebooksView, AddNotebooksView, Edit_NotebooksView,
     MiniPCView, AddMiniPCView, Edit_MiniPCView,
     ProyectoresView, AddProyectorView, Edit_ProyectorView,
     BodegaADRView, AddBodegaADRView, Edit_BodegaADRView,
     AzoteaView, AddAzoteaView, Edit_AzoteaView,
     ErrorView, DescargarExcelView,
+    EquiposIslaView, EquiposIslaModel,       
+    Add_EquiposIsla, Edit_EquiposIsla, Detalle_EquiposIsla, Detalle_SwitchDeRed, SwitchDeRedView, Edit_SwitchDeRed, Add_SwitchDeRed,
     # Vistas para Monitor
     MonitorView, AddMonitorView, EditMonitorView, MonitorDetailView,
     # Vistas para Audio
@@ -25,8 +27,10 @@ from .views import (
     UploadExcelAllInOneView, UploadExcelNotebookView, UploadExcelProyectorView,
     UploadExcelMiniPCView, UploadExcelAllInOneAdmView, UploadExcelBodegaADRView,
     UploadExcelAzoteaView,
+    UploadExcelEquiposIslaView, UploadExcelSwitchDeRedView,
     ConfirmarRestauracionView, EliminadosListView, DeleteToEliminadosView, detalle_activo_busqueda
 )
+
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
@@ -78,6 +82,20 @@ urlpatterns = [
     path('delete_all_in_one/<str:model_name>/<int:pk>/', login_required(DeleteToEliminadosView.as_view()), name='delete_all_in_one'),
     path('eliminados/', login_required(EliminadosListView.as_view()), name='eliminados'),
     path('confirmar_restauracion_allinone/<int:pk>/', login_required(ConfirmarRestauracionView.as_view()), name='confirmar_restauracion_allinone'),
+    # Gestion Equipos Isla
+# Gestión Equipos Isla
+    path('equipos_isla/', login_required(EquiposIslaView.as_view()), name="equipos_isla"),
+    path('add_equipos_isla/', login_required(Add_EquiposIsla.as_view()), name="add_equipos_isla"),
+    path('edit_equipos_isla/<int:pk>/', login_required(Edit_EquiposIsla.as_view()), name="edit_equipos_isla"),
+    path('delete_equipos_isla/<str:model_name>/<int:pk>/', login_required(DeleteToEliminadosView.as_view()), name='delete_equipos_isla'),
+    path('confirmar_restauracion_equipos_isla/<int:pk>/', login_required(ConfirmarRestauracionView.as_view()), name='confirmar_restauracion_equipos_isla'),
+   
+  #Gestion de SwitchDeRed  
+    path('switch_de_red/', login_required(SwitchDeRedView.as_view()), name="switch_de_red"),
+    path('add_switch_de_red/', login_required(Add_SwitchDeRed.as_view()), name="add_switch_de_red"),
+    path('edit_switch_de_red/<int:pk>/', login_required(Edit_SwitchDeRed.as_view()), name="edit_switch_de_red"),
+    path('delete_switch_de_red/<str:model_name>/<int:pk>/', login_required(DeleteToEliminadosView.as_view()), name='delete_switch_de_red'),
+    path('confirmar_restauracion_switch_de_red/<int:pk>/', login_required(ConfirmarRestauracionView.as_view()), name='confirmar_restauracion_switch_de_red'),   
     
     # All In One Administradores
     path('all_in_one_adm/', login_required(AllInOneAdminView.as_view()), name="all_in_one_adm"),
@@ -145,6 +163,8 @@ urlpatterns = [
     path('upload_excel_allinoneadm/', login_required(UploadExcelAllInOneAdmView.as_view()), name='upload_excel_allinoneadm'),
     path('upload_excel_bodega_adr/', login_required(UploadExcelBodegaADRView.as_view()), name='upload_excel_bodega_adr'),
     path('upload_excel_azotea/', login_required(UploadExcelAzoteaView.as_view()), name='upload_excel_azotea'),
+    path('upload_excel_equipos_isla/', login_required(UploadExcelEquiposIslaView.as_view()), name='upload_excel_equipos_isla'),
+    path("upload_excel_switch_de_red", login_required(UploadExcelSwitchDeRedView.as_view()), name="upload_excel_switch_de_red",),
 
     path('upload_excel_monitor/', login_required(views.UploadExcelMonitorView.as_view()), name='upload_excel_monitor'),
     path('upload_excel_audio/', login_required(views.UploadExcelAudioView.as_view()), name='upload_excel_audio'),
@@ -162,6 +182,9 @@ urlpatterns = [
     path('detalle_proyector/<int:pk>/', views.ProyectorDetailView.as_view(), name='detalle_proyector'),
     path('detalle_bodegaadr/<int:pk>/', views.BodegaADRDetailView.as_view(), name='detalle_bodegaadr'),
     path('detalle_azotea/<int:pk>/', views.AzoteaDetailView.as_view(), name='detalle_azotea'),
+    path('detalle_equipos_isla/<int:pk>/', views.Detalle_EquiposIsla.as_view(), name='detalle_equipos_isla'),
+    path('detalle_switch_de_red/<int:pk>/', views.Detalle_SwitchDeRed.as_view(), name='detalle_SwitchDeRed'),
+    
     # Las URLs de detalle para Monitor, Audio y Tablet ya se agregaron arriba con sus respectivos bloques.
     
     # URL para la vista de detalle de activo desde búsqueda global

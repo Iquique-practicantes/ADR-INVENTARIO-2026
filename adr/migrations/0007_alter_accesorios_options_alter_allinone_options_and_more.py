@@ -209,8 +209,8 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterField(
             model_name='reporte',
-            name='unive',
-            field=models.CharField(blank=True, max_length=100, verbose_name='UNIVE'),
+            name='etiqueta',
+            field=models.CharField(blank=True, max_length=100, verbose_name='ETIQUETA'),
         ),
         migrations.AlterField(
             model_name='reporteaccesorios',

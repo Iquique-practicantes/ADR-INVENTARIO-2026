@@ -54,7 +54,7 @@ from accounts.models import Profile  # Modelo de perfil de usuario
 from .models import (
     AllInOne, AllInOneAdmins, Notebook, MiniPC,
     Proyectores, BodegaADR, Azotea, Profile, Eliminados, HistorialCambios,
-    Monitor, Audio, Tablet  # Nuevos modelos agregados
+    Monitor, Audio, Tablet, EquiposIsla as EquiposIslaModel, SwitchDeRed as SwitchDeRedModel, # Nuevos modelos agregados
 )
 
 # Importaciones locales - Formularios
@@ -62,7 +62,7 @@ from .forms import (
     LoginForm, UserCreationForm, ProfileForm, UserForm, RegisterUserForm,
     AllInOneForm, AllInOneAdminsForm, NotebooksForm, MiniPCForm,
     ProyectoresForm, BodegaADRForm, AzoteaForm,
-    UploadExcelForm, MonitorForm, AudioForm, TabletForm # Nuevos formularios agregados
+    UploadExcelForm, MonitorForm, AudioForm, TabletForm, EquiposIslaForm, SwitchDeRedForm,# Nuevos formularios agregados
 )
 from django.forms.models import model_to_dict
 
@@ -204,6 +204,7 @@ class DescargarExcelView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         model_mapping = {
             'allinone': (AllInOne, f'AllInOne_{fecha_actual}.xlsx'),
             'allinoneadmin': (AllInOneAdmins, f'AllInOneAdmins_{fecha_actual}.xlsx'),
+            'equiposisla': (EquiposIslaModel, f'EquiposIsla{fecha_actual}.xlsx'),
             'notebook': (Notebook, f'Notebooks_{fecha_actual}.xlsx'),
             'minipc': (MiniPC, f'MiniPCs_{fecha_actual}.xlsx'),
             'proyector': (Proyectores, f'Proyectores_{fecha_actual}.xlsx'),
@@ -231,7 +232,7 @@ class DescargarExcelView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
                 Q(marca__icontains=search_query) |
                 Q(modelo__icontains=search_query) |
                 Q(n_serie__icontains=search_query) |
-                Q(unive__icontains=search_query) |
+                Q(etiqueta__icontains=search_query) |
                 Q(bdo__icontains=search_query) |
                 Q(netbios__icontains=search_query) |
                 Q(ubicacion__icontains=search_query) |
@@ -295,11 +296,102 @@ class AllInOneSelectionView(LoginRequiredMixin, TemplateView):
 class ErrorView(TemplateView):
     """Vista para mostrar errores"""
     template_name = 'error.html'
+    
 
+@add_group_name_to_context
+class ErrorView(TemplateView):
+    """Vista para mostrar errores"""
+    template_name = 'error.html'
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['error_image'] = os.path.join(settings.MEDIA_ROOT, 'error.png')
         return context
+
+@add_group_name_to_context
+class EquiposIslaView(LoginRequiredMixin, ListView):
+    """Vista para listar equipos isla ADR"""
+    model = EquiposIslaModel
+    template_name = 'modulos/equipos_isla.html'
+    context_object_name = 'equipos_isla'
+    paginate_by = 25
+    ordering = ['activo', '-fecha_creacion']
+
+    def get_queryset(self):
+        """Obtiene y filtra la lista según búsqueda (igual que Azotea)"""
+        queryset = super().get_queryset()
+        search_query = self.request.GET.get('search', '').strip()
+        search_by_pk = self.request.GET.get('search_by_pk', 'false').lower() == 'true'
+
+        if search_by_pk:
+            if search_query.isdigit():
+                return queryset.filter(pk=int(search_query))
+            else:
+                return queryset.none()
+
+        if search_query:
+            queryset = queryset.filter(
+                Q(ubicacion__icontains=search_query) |
+                Q(activo__icontains=search_query) |
+                Q(marca__icontains=search_query) |
+                Q(modelo__icontains=search_query) |
+                Q(n_serie__icontains=search_query) |
+                Q(etiqueta__icontains=search_query) |
+                Q(bdo__icontains=search_query) |
+                Q(creado_por__first_name__icontains=search_query) |
+                Q(creado_por__last_name__icontains=search_query) |
+                Q(fecha_creacion__icontains=search_query)
+            )
+
+        return queryset.select_related('creado_por').order_by('activo', '-fecha_creacion')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['search_query'] = self.request.GET.get('search', '').strip()
+        return context
+
+class SwitchDeRedView(LoginRequiredMixin, ListView):
+    """Vista para listar equipos isla ADR"""
+    model = SwitchDeRedModel
+    template_name = 'modulos/switch_de_red.html'
+    context_object_name = 'switch_de_red'
+    paginate_by = 25
+    ordering = ['activo', '-fecha_creacion']
+
+    def get_queryset(self):
+        """Obtiene y filtra la lista según búsqueda (igual que Azotea)"""
+        queryset = super().get_queryset()
+        search_query = self.request.GET.get('search', '').strip()
+        search_by_pk = self.request.GET.get('search_by_pk', 'false').lower() == 'true'
+
+        if search_by_pk:
+            if search_query.isdigit():
+                return queryset.filter(pk=int(search_query))
+            else:
+                return queryset.none()
+
+        if search_query:
+            queryset = queryset.filter(
+                Q(ubicacion__icontains=search_query) |
+                Q(activo__icontains=search_query) |
+                Q(marca__icontains=search_query) |
+                Q(modelo__icontains=search_query) |
+                Q(n_serie__icontains=search_query) |
+                Q(etiqueta__icontains=search_query) |
+                Q(bdo__icontains=search_query) |
+                Q(creado_por__first_name__icontains=search_query) |
+                Q(creado_por__last_name__icontains=search_query) |
+                Q(fecha_creacion__icontains=search_query)
+            )
+
+        return queryset.select_related('creado_por').order_by('activo', '-fecha_creacion')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['search_query'] = self.request.GET.get('search', '').strip()
+        return context
+
+
+
 
 @add_group_name_to_context
 class AddUserView(UserPassesTestMixin, LoginRequiredMixin, CreateView):
@@ -716,7 +808,7 @@ class AllInOneView(LoginRequiredMixin, ListView):
                 Q(marca__icontains=search_query) |
                 Q(modelo__icontains=search_query) |
                 Q(n_serie__icontains=search_query) |
-                Q(unive__icontains=search_query) |
+                Q(etiqueta__icontains=search_query) |
                 Q(bdo__icontains=search_query) |
                 Q(netbios__icontains=search_query) |
                 Q(ubicacion__icontains=search_query) |
@@ -772,7 +864,31 @@ class Add_AllInOneView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
                 # Validación de campos obligatorios
                 required_fields = {
                     'modelo': 'El modelo es requerido',
-                    'unive': 'El UNIVE es requerido',
+                    'etiqueta': 'El ETIQUETA es requerido',
+                    'netbios': 'El NetBios es requerido',
+                }
+
+                for field, error_message in required_fields.items():
+                    if not form.cleaned_data.get(field):
+                        form.add_error(field, error_message)
+                        return self.form_invalid(form)
+
+                # Validación del formato BDO (permite 0)
+                bdo = form.cleaned_data.get('bdo')
+                if bdo is not None: # Solo validar si se proporcionó un valor
+                    try:
+                        bdo_int = int(bdo)
+                        if bdo_int < 0:
+                            form.add_error('bdo', 'El campo BDO no puede ser un número negativo.')
+                            return self.form_invalid(form)
+                    except ValueError:
+                        form.add_error('bdo', 'El campo BDO solo debe contener números.')
+                        return self.form_invalid(form)
+                    
+                # Validación de campos obligatorios
+                required_fields = {
+                    'modelo': 'El modelo es requerido',
+                    'etiqueta': 'El ETIQUETA es requerido',
                     'netbios': 'El NetBios es requerido',
                 }
 
@@ -812,7 +928,7 @@ class Add_AllInOneView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
                 - Marca: {instance.marca}
                 - Modelo: {instance.modelo}
                 - N° Serie: {instance.n_serie}
-                - UNIVE: {instance.unive}
+                - etiqueta: {instance.etiqueta}
                 - NetBIOS: {getattr(instance, 'netbios', '')}
                 - BDO: {getattr(instance, 'bdo', '')}
                 - Ubicación: {getattr(instance, 'ubicacion', '')}
@@ -835,6 +951,237 @@ class Add_AllInOneView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 
     def form_invalid(self, form):
         return super().form_invalid(form)
+
+@add_group_name_to_context
+class Add_EquiposIsla(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    """Vista para agregar nuevo All In One"""
+    model = EquiposIslaModel
+    template_name = 'modulos/add_equipos_isla.html'
+    form_class = EquiposIslaForm
+    success_url = reverse_lazy('equipos_isla')    
+    
+class Detalle_EquiposIsla(LoginRequiredMixin, DetailView):
+    model = EquiposIslaModel
+    template_name = "modulos/detalle_equipos_isla.html"  # crea este template después
+    context_object_name = "equiposisla"
+
+class Edit_EquiposIsla(LoginRequiredMixin, UpdateView):
+    model = EquiposIslaModel
+    form_class = EquiposIslaForm
+    template_name = "modulos/edit_equipos_isla.html"
+    success_url = reverse_lazy("equipos_isla")
+
+    def test_func(self):
+        """Verifica permisos: solo ADR, Operadores y Auxiliares pueden agregar"""
+        return self.request.user.groups.first().name in ['ADR', 'Operadores ADR', 'Auxiliares Operadores ADR']
+
+    def handle_no_permission(self):
+        """Redirección si no tiene permisos"""
+        return redirect('error')
+
+    def get_context_data(self, **kwargs):
+        """Agrega lista de equipos isla al contexto"""
+        context = super().get_context_data(**kwargs)
+        context['equipos_isla'] = EquiposIslaModel.objects.all()
+        return context
+
+    def form_valid(self, form):
+        """Procesa el formulario válido con validaciones adicionales y envía notificación"""
+        try:
+            if form.is_valid():
+                # Validación del número de serie
+                n_serie = form.cleaned_data.get('n_serie')
+                if not n_serie:
+                    form.add_error('n_serie', 'El número de serie es requerido')
+                    return self.form_invalid(form)
+
+                if EquiposIslaModel.objects.filter(n_serie=n_serie).exists():
+                    form.add_error('n_serie', 'Este Número de Serie ya existe')
+                    return self.form_invalid(form)
+
+                # Validación de campos obligatorios
+                required_fields = {
+                    'modelo': 'El modelo es requerido',
+                    'etiqueta': 'El etiqueta es requerido',
+                    'netbios': 'El NetBios es requerido',
+                }
+
+                for field, error_message in required_fields.items():
+                    if not form.cleaned_data.get(field):
+                        form.add_error(field, error_message)
+                        return self.form_invalid(form)
+
+                # Validación del formato BDO (permite 0)
+                bdo = form.cleaned_data.get('bdo')
+                if bdo is not None: # Solo validar si se proporcionó un valor
+                    try:
+                        bdo_int = int(bdo)
+                        if bdo_int < 0:
+                            form.add_error('bdo', 'El campo BDO no puede ser un número negativo.')
+                            return self.form_invalid(form)
+                    except ValueError:
+                        form.add_error('bdo', 'El campo BDO solo debe contener números.')
+                        return self.form_invalid(form)
+
+                # Guarda con el usuario actual
+                form.instance.creado_por = self.request.user
+                instance = form.save()
+
+                # Enviar notificación por correo
+                accion = "Registro Agregado"
+                modelo = "equipos isla"
+                user = self.request.user
+                user_group = user.groups.first().name if user.groups.exists() else "Sin grupo asignado"
+                mensaje = f"""
+                El usuario {user.get_full_name()} (Grupo: {user_group}) ha realizado la siguiente acción:
+                Acción: {accion}
+                Modelo: {modelo}
+                Datos:
+                - Estado: {instance.estado}
+                - Activo: {modelo}
+                - Marca: {instance.marca}
+                - Modelo: {instance.modelo}
+                - N° Serie: {instance.n_serie}
+                - etiqueta: {instance.etiqueta}
+                - NetBIOS: {getattr(instance, 'netbios', '')}
+                - BDO: {getattr(instance, 'bdo', '')}
+                - Ubicación: {getattr(instance, 'ubicacion', '')}
+
+                """
+
+                enviar_notificacion_asunto(
+                    asunto="Registro Agregado en equipos isla",
+                    mensaje=mensaje,
+                    destinatarios=settings.EMAIL_RECIPIENTS
+                )
+
+                messages.success(self.request, 'equipos isla se ha guardado correctamente.')
+                return super().form_valid(form)
+
+            return self.form_invalid(form)
+        except Exception as e:
+            messages.error(self.request, 'Ha ocurrido un error. Por favor, verifique los datos e intente nuevamente.')
+            return self.form_invalid(form)
+
+    def form_invalid(self, form):
+        return super().form_invalid(form)
+
+
+@add_group_name_to_context
+class Add_SwitchDeRed(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    """Vista para agregar nuevo All In One"""
+    model = SwitchDeRedModel
+    template_name = 'modulos/add_switch_de_red.html'
+    form_class = SwitchDeRedForm
+    success_url = reverse_lazy('switch_de_red')    
+    
+class Detalle_SwitchDeRed(LoginRequiredMixin, DetailView):
+    model = SwitchDeRedModel
+    template_name = "modulos/detalle_switch_de_red.html"  # crea este template después
+    context_object_name = "switch_de_red"
+
+class Edit_SwitchDeRed(LoginRequiredMixin, UpdateView):
+    model = SwitchDeRedModel
+    form_class = SwitchDeRedForm
+    template_name = "modulos/edit_switch_de_red.html"
+    success_url = reverse_lazy("switch_de_red")
+
+    def test_func(self):
+        """Verifica permisos: solo ADR, Operadores y Auxiliares pueden agregar"""
+        return self.request.user.groups.first().name in ['ADR', 'Operadores ADR', 'Auxiliares Operadores ADR']
+
+    def handle_no_permission(self):
+        """Redirección si no tiene permisos"""
+        return redirect('error')
+
+    def get_context_data(self, **kwargs):
+        """Agrega lista de equipos isla al contexto"""
+        context = super().get_context_data(**kwargs)
+        context['equipos_isla'] = SwitchDeRedModel.objects.all()
+        return context
+
+    def form_valid(self, form):
+        """Procesa el formulario válido con validaciones adicionales y envía notificación"""
+        try:
+            if form.is_valid():
+                # Validación del número de serie
+                n_serie = form.cleaned_data.get('n_serie')
+                if not n_serie:
+                    form.add_error('n_serie', 'El número de serie es requerido')
+                    return self.form_invalid(form)
+
+                if SwitchDeRedModel.objects.filter(n_serie=n_serie).exists():
+                    form.add_error('n_serie', 'Este Número de Serie ya existe')
+                    return self.form_invalid(form)
+
+                # Validación de campos obligatorios
+                required_fields = {
+                    'modelo': 'El modelo es requerido',
+                    'etiqueta': 'El ETIQUETA es requerido',
+                    'netbios': 'El NetBios es requerido',
+                }
+
+                for field, error_message in required_fields.items():
+                    if not form.cleaned_data.get(field):
+                        form.add_error(field, error_message)
+                        return self.form_invalid(form)
+
+                # Validación del formato BDO (permite 0)
+                bdo = form.cleaned_data.get('bdo')
+                if bdo is not None: # Solo validar si se proporcionó un valor
+                    try:
+                        bdo_int = int(bdo)
+                        if bdo_int < 0:
+                            form.add_error('bdo', 'El campo BDO no puede ser un número negativo.')
+                            return self.form_invalid(form)
+                    except ValueError:
+                        form.add_error('bdo', 'El campo BDO solo debe contener números.')
+                        return self.form_invalid(form)
+
+                # Guarda con el usuario actual
+                form.instance.creado_por = self.request.user
+                instance = form.save()
+
+                # Enviar notificación por correo
+                accion = "Registro Agregado"
+                modelo = "switch de red"
+                user = self.request.user
+                user_group = user.groups.first().name if user.groups.exists() else "Sin grupo asignado"
+                mensaje = f"""
+                El usuario {user.get_full_name()} (Grupo: {user_group}) ha realizado la siguiente acción:
+                Acción: {accion}
+                Modelo: {modelo}
+                Datos:
+                - Estado: {instance.estado}
+                - Activo: {modelo}
+                - Marca: {instance.marca}
+                - Modelo: {instance.modelo}
+                - N° Serie: {instance.n_serie}
+                - etiqueta: {instance.etiqueta}
+                - NetBIOS: {getattr(instance, 'netbios', '')}
+                - BDO: {getattr(instance, 'bdo', '')}
+                - Ubicación: {getattr(instance, 'ubicacion', '')}
+
+                """
+
+                enviar_notificacion_asunto(
+                    asunto="Registro Agregado en switch de red",
+                    mensaje=mensaje,
+                    destinatarios=settings.EMAIL_RECIPIENTS
+                )
+
+                messages.success(self.request, 'equipos isla se ha guardado correctamente.')
+                return super().form_valid(form)
+
+            return self.form_invalid(form)
+        except Exception as e:
+            messages.error(self.request, 'Ha ocurrido un error. Por favor, verifique los datos e intente nuevamente.')
+            return self.form_invalid(form)
+
+    def form_invalid(self, form):
+        return super().form_invalid(form)
+
+
 
 
 @add_group_name_to_context
@@ -866,7 +1213,7 @@ class Edit_AllInOneView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             # Validación de campos obligatorios
             required_fields = {
                 'modelo': 'El modelo es requerido',
-                'unive': 'El UNIVE es requerido',
+                'etiqueta': 'El ETIQUETA es requerido',
                 'netbios': 'El NetBios es requerido',
                 # 'bdo': 'El BDO es requerido'  # Añadimos BDO como campo requerido
             }
@@ -990,6 +1337,8 @@ MODELS_DICT = {
     'monitor': Monitor,
     'audio': Audio,
     'tablet': Tablet,
+    'equipos_isla': EquiposIslaModel,
+    'switch_de_red': SwitchDeRedModel,
 }
 
 
@@ -1020,7 +1369,7 @@ class EliminadosListView(LoginRequiredMixin, ListView):
             queryset = queryset.filter(    
                 Q(modelo__icontains=search_query) |
                 Q(n_serie__icontains=search_query) |
-                Q(unive__icontains=search_query) |
+                Q(etiqueta__icontains=search_query) |
                 Q(bdo__icontains=search_query) |
                 Q(estado__icontains=search_query) |
                 Q(marca__icontains=search_query) |
@@ -1079,7 +1428,7 @@ class ConfirmarRestauracionView(LoginRequiredMixin, UserPassesTestMixin, DetailV
                 'activo': registro.activo,
                 'modelo': registro.modelo,
                 'n_serie': registro.n_serie,
-                'unive': registro.unive,
+                'etiqueta': registro.etiqueta,
                 'bdo': registro.bdo,
                 'estado': registro.estado,
                 'marca': registro.marca,
@@ -1108,7 +1457,7 @@ class ConfirmarRestauracionView(LoginRequiredMixin, UserPassesTestMixin, DetailV
             - Marca: {registro.marca}
             - Modelo: {registro.modelo}
             - N° Serie: {registro.n_serie}
-            - UNIVE: {registro.unive}
+            - etiqueta: {registro.etiqueta}
             - BDO: {registro.bdo}
             - NetBIOS: {registro.netbios if 'netbios' in campos_validos else 'No aplica'}
             - Ubicación: {registro.ubicacion if 'ubicacion' in campos_validos else 'No aplica'}
@@ -1143,10 +1492,15 @@ class DeleteToEliminadosView(LoginRequiredMixin, UserPassesTestMixin, View):
 
     def test_func(self):
         """Solo ADR y Operadores puede eliminar"""
-        return self.request.user.groups.first().name in ['ADR', 'Operadores ADR']
+        user = self.request.user
+        has_perm = user.groups.filter(name__in=['ADR', 'Operadores ADR']).exists()
+        print(f"DEBUG: DeleteToEliminadosView.test_func - User: {user.username}, Groups: {[g.name for g in user.groups.all()]}, Has Perm: {has_perm}")
+        return has_perm
 
     def handle_no_permission(self):
-        return redirect('error')
+        print("DEBUG: DeleteToEliminadosView.handle_no_permission - Access Denied")
+        messages.error(self.request, "No tienes permisos para realizar esta acción.")
+        return redirect('inicio')  # Redirect to a safe page like home/inicio instead of potentially missing 'error'
 
     def post(self, request, *args, **kwargs):
         """Procesa la eliminación lógica moviendo el registro a la tabla de Eliminados"""
@@ -1162,9 +1516,10 @@ class DeleteToEliminadosView(LoginRequiredMixin, UserPassesTestMixin, View):
         model_name = model_name.lower()  # Asegurarse de que el nombre sea siempre minúscula para la comparación
 
         # Debugging: Print model_name and MODELS_DICT keys
-        print(f"Attempting to delete model: {model_name}")
-        print(f"Available models in MODELS_DICT: {MODELS_DICT.keys()}")
-
+        print(f"DEBUG: Processing delete for model: {model_name} with pk: {pk}")
+        print(f"DEBUG: User: {request.user.username}, Groups: {[g.name for g in request.user.groups.all()]}")
+        print(f"DEBUG: MODELS_DICT keys: {list(MODELS_DICT.keys())}")
+        
         model = MODELS_DICT.get(model_name)
         if not model:
             messages.error(request, f'Modelo no encontrado: {model_name}')
@@ -1177,23 +1532,22 @@ class DeleteToEliminadosView(LoginRequiredMixin, UserPassesTestMixin, View):
             # Uso de una transacción atómica para garantizar la consistencia de los datos
             with transaction.atomic():
                 # Intentar guardar los datos en la tabla Eliminados
+                # Usar getattr para todos los campos opcionales para evitar AttributeError en modelos que no los tengan
                 eliminado_data = {
                     'activo': model_name.title(),
-                    'modelo': instance.modelo,
-                    'n_serie': instance.n_serie if instance.n_serie is not None else '', # Asigna '' si es None
-                    'unive': instance.unive,
-                    'bdo': instance.bdo,
-                    'estado': instance.estado,
-                    'marca': instance.marca,
+                    'modelo': getattr(instance, 'modelo', 'Desconocido'),
+                    'n_serie': getattr(instance, 'n_serie', '') or '', # Asegura cadena vacía si es None
+                    'etiqueta': getattr(instance, 'etiqueta', None),
+                    'bdo': getattr(instance, 'bdo', 0),
+                    'estado': getattr(instance, 'estado', 'Desconocido'),
+                    'marca': getattr(instance, 'marca', 'Desconocido'),
                     'eliminado_por': request.user,
                     'fecha_eliminacion': timezone.now()
                 }
 
                 # Incluir netbios y ubicacion solo si existen en el modelo original
-                if hasattr(instance, 'netbios'):
-                    eliminado_data['netbios'] = getattr(instance, 'netbios', '')
-                if hasattr(instance, 'ubicacion'):
-                     eliminado_data['ubicacion'] = getattr(instance, 'ubicacion', '')
+                eliminado_data['netbios'] = getattr(instance, 'netbios', '')
+                eliminado_data['ubicacion'] = getattr(instance, 'ubicacion', '')
 
                 print("DEBUG: Intentando crear registro en Eliminados con data:", eliminado_data) # Debug print
                 eliminado = Eliminados.objects.create(**eliminado_data)
@@ -1217,7 +1571,7 @@ class DeleteToEliminadosView(LoginRequiredMixin, UserPassesTestMixin, View):
                     - Marca: {instance.marca}
                     - Modelo: {instance.modelo}
                     - N° Serie: {instance.n_serie}
-                    - UNIVE: {instance.unive}
+                    - ETIQUETA: {instance.etiqueta}
                     - BDO: {instance.bdo}
                     - Estado: {instance.estado}
                     - Creado por: {instance.creado_por.get_full_name() if instance.creado_por else 'N/A'}
@@ -1292,7 +1646,7 @@ class AllInOneAdminView(LoginRequiredMixin, ListView):
                 Q(marca__icontains=search_query) |
                 Q(modelo__icontains=search_query) |
                 Q(n_serie__icontains=search_query) |
-                Q(unive__icontains=search_query) |     
+                Q(etiqueta__icontains=search_query) |     
                 Q(bdo__icontains=search_query) |
                 Q(netbios__icontains=search_query) |
                 Q(ubicacion__icontains=search_query) |
@@ -1348,7 +1702,7 @@ class Add_AllInOneAdminView(LoginRequiredMixin, UserPassesTestMixin, CreateView)
                 # Validación de campos obligatorios
                 required_fields = {
                     'modelo': 'El modelo es requerido',
-                    'unive': 'El UNIVE es requerido',
+                    'etiqueta': 'El ETIQUETA es requerido',
                     'netbios': 'El NetBios es requerido',
                     # 'bdo': 'El BDO es requerido'  # Eliminamos BDO de los campos requeridos en la vista
                 }
@@ -1382,7 +1736,7 @@ class Add_AllInOneAdminView(LoginRequiredMixin, UserPassesTestMixin, CreateView)
                 - Marca: {instance.marca}
                 - Modelo: {instance.modelo}
                 - N° Serie: {instance.n_serie}
-                - UNIVE: {instance.unive}
+                - etiqueta: {instance.etiqueta}
                 - NetBIOS: {instance.netbios}
                 - BDO: {instance.bdo}
                 - Ubicación: {instance.ubicacion}
@@ -1451,7 +1805,7 @@ class Edit_AllInOneAdmView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             # Validación de campos obligatorios
             required_fields = {
                 'modelo': 'El modelo es requerido',
-                'unive': 'El UNIVE es requerido',
+                'etiqueta': 'El ETIQUETA es requerido',
                 'netbios': 'El NetBios es requerido',
                 # 'bdo': 'El BDO es requerido'  # Añadimos BDO como campo requerido
             }
@@ -1565,7 +1919,7 @@ class Edit_AllInOneAdmView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         # Validación de campos obligatorios
         required_fields = {
             'modelo': 'El modelo es requerido',
-            'unive': 'El UNIVE es requerido',
+            'etiqueta': 'El ETIQUETA es requerido',
             'netbios': 'El NetBios es requerido',
             # 'bdo': 'El BDO es requerido'  # Añadimos BDO como campo requerido
         }
@@ -1718,7 +2072,7 @@ class NotebooksView(LoginRequiredMixin, ListView):
                 Q(marca__icontains=search_query) |
                 Q(modelo__icontains=search_query) |
                 Q(n_serie__icontains=search_query) |
-                Q(unive__icontains=search_query) |
+                Q(etiqueta__icontains=search_query) |
                 Q(bdo__icontains=search_query) |
                 Q(netbios__icontains=search_query) |
                 Q(ubicacion__icontains=search_query) |
@@ -1774,7 +2128,7 @@ class AddNotebooksView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
                 # Validación de campos obligatorios
                 required_fields = {
                     'modelo': 'El modelo es requerido',
-                    'unive': 'El UNIVE es requerido',
+                    'etiqueta': 'El ETIQUETA es requerido',
                     'netbios': 'El NetBios es requerido',
                     # Eliminada la validación explícita para BDO
                 }
@@ -1812,7 +2166,7 @@ class AddNotebooksView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
                 - Marca: {instance.marca}
                 - Modelo: {instance.modelo}
                 - N° Serie: {instance.n_serie}
-                - UNIVE: {instance.unive}
+                - ETIQUETA: {instance.etiqueta}
                 - NetBIOS: {instance.netbios}
                 - BDO: {instance.bdo}
                 - Ubicación: {instance.ubicacion}
@@ -1874,7 +2228,7 @@ class Edit_NotebooksView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             # Validación de campos obligatorios
             required_fields = {
                 'modelo': 'El modelo es requerido',
-                'unive': 'El UNIVE es requerido',
+                'etiqueta': 'El ETIQUETA es requerido',
                 'netbios': 'El NetBios es requerido',
                 # 'bdo': 'El BDO es requerido'
             }
@@ -1910,7 +2264,7 @@ class Edit_NotebooksView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             - Marca: {instance.marca}
             - Modelo: {instance.modelo}
             - N° Serie: {instance.n_serie}
-            - UNIVE: {instance.unive}
+            - ETIQUETA: {instance.etiqueta}
             - NetBIOS: {instance.netbios}
             - BDO: {instance.bdo}
             - Ubicación: {instance.ubicacion}
@@ -1968,7 +2322,7 @@ class MiniPCView(LoginRequiredMixin, ListView):
                 Q(marca__icontains=search_query) |
                 Q(modelo__icontains=search_query) |
                 Q(n_serie__icontains=search_query) |
-                Q(unive__icontains=search_query) |
+                Q(etiqueta__icontains=search_query) |
                 Q(bdo__icontains=search_query) |
                 Q(netbios__icontains=search_query) |
                 Q(ubicacion__icontains=search_query) |
@@ -2023,7 +2377,7 @@ class AddMiniPCView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
                 # Validación de campos obligatorios
                 required_fields = {
                     'modelo': 'El modelo es requerido',
-                    'unive': 'El UNIVE es requerido',
+                    'etiqueta': 'El ETIQUETA es requerido',
                     'bdo': 'El BDO es requerido'
                 }
                 for field, error_message in required_fields.items():
@@ -2057,7 +2411,7 @@ class AddMiniPCView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
                 - Marca: {instance.marca}
                 - Modelo: {instance.modelo}
                 - N° Serie: {instance.n_serie}
-                - UNIVE: {instance.unive}
+                - ETIQUETA: {instance.etiqueta}
                 - NetBIOS: {instance.netbios}
                 - BDO: {instance.bdo}
                 - Ubicación: {instance.ubicacion}
@@ -2117,7 +2471,7 @@ class Edit_MiniPCView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             # Validación de campos obligatorios
             required_fields = {
                 'modelo': 'El modelo es requerido',
-                'unive': 'El UNIVE es requerido',
+                'etiqueta': 'El ETIQUETA es requerido',
                 # 'bdo': 'El BDO es requerido'
             }
             for field, error_message in required_fields.items():
@@ -2154,7 +2508,7 @@ class Edit_MiniPCView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             - Marca: {instance.marca}
             - Modelo: {instance.modelo}
             - N° Serie: {instance.n_serie}
-            - UNIVE: {instance.unive}
+            - ETIQUETA: {instance.etiqueta}
             - NetBIOS: {instance.netbios}
             - BDO: {instance.bdo}
             - Ubicación: {instance.ubicacion}
@@ -2447,7 +2801,7 @@ class BodegaADRView(LoginRequiredMixin, ListView):
                 Q(marca__icontains=search_query) |
                 Q(modelo__icontains=search_query) |
                 Q(n_serie__icontains=search_query) |
-                Q(unive__icontains=search_query) |
+                Q(etiqueta__icontains=search_query) |
                 Q(bdo__icontains=search_query) |
                 Q(netbios__icontains=search_query) |
                 Q(creado_por__first_name__icontains=search_query) |
@@ -2544,7 +2898,7 @@ class AddBodegaADRView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
             - Marca: {instance.marca}
             - Modelo: {instance.modelo}
             - N° Serie: {instance.n_serie}
-            - UNIVE: {instance.unive}
+            - ETIQUETA: {instance.etiqueta}
             - BDO: {instance.bdo if instance.bdo is not None else 'N/A'} # Manejar BDO opcional
             - NetBIOS: {instance.netbios if instance.netbios is not None else 'N/A'} # Manejar NetBIOS opcional
             """
@@ -2678,7 +3032,7 @@ class Edit_BodegaADRView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             - Marca: {instance.marca}
             - Modelo: {instance.modelo}
             - N° Serie: {instance.n_serie}
-            - UNIVE: {instance.unive}
+            - ETIQUETA: {instance.etiqueta}
             - BDO: {instance.bdo}
             - NetBIOS: {instance.netbios}
             """
@@ -2736,7 +3090,7 @@ class AzoteaView(LoginRequiredMixin, ListView):
                 Q(marca__icontains=search_query) |
                 Q(modelo__icontains=search_query) |
                 Q(n_serie__icontains=search_query) |
-                Q(unive__icontains=search_query) |
+                Q(etiqueta__icontains=search_query) |
                 Q(bdo__icontains=search_query) |
                 Q(creado_por__first_name__icontains=search_query) |
                 Q(creado_por__last_name__icontains=search_query) |
@@ -2832,7 +3186,7 @@ class AddAzoteaView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
             - Marca: {instance.marca}
             - Modelo: {instance.modelo}
             - N° Serie: {instance.n_serie}
-            - UNIVE: {instance.unive}
+            - ETIQUETA: {instance.etiqueta}
             - BDO: {instance.bdo}
             """
 
@@ -2944,7 +3298,7 @@ class Edit_AzoteaView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             - Marca: {instance.marca}
             - Modelo: {instance.modelo}
             - N° Serie: {instance.n_serie}
-            - UNIVE: {instance.unive}
+            - ETIQUETA: {instance.etiqueta}
             - BDO: {instance.bdo}
             """
 
@@ -2996,7 +3350,7 @@ class MonitorView(LoginRequiredMixin, ListView):
         # Por consistencia con AzoteaView, dejaremos que filtrar_y_paginar tome self.model.
         
         # Campos para la búsqueda en Monitor (eliminado 'pulgadas')
-        search_fields = ['activo', 'marca', 'modelo', 'n_serie', 'unive', 'bdo', 'ubicacion', 'asignado_a', 'creado_por__first_name', 'creado_por__last_name']
+        search_fields = ['activo', 'marca', 'modelo', 'n_serie', 'etiqueta', 'bdo', 'ubicacion', 'asignado_a', 'creado_por__first_name', 'creado_por__last_name']
 
         page_obj, filter_ubicacion_actual, ubicaciones_disponibles = filtrar_y_paginar(
             self.request,
@@ -3019,7 +3373,7 @@ class MonitorView(LoginRequiredMixin, ListView):
         page_obj, filter_ubicacion_actual, ubicaciones_disponibles = filtrar_y_paginar(
             self.request,
             self.model,
-            ['activo', 'marca', 'modelo', 'n_serie', 'unive', 'bdo', 'ubicacion', 'asignado_a', 'creado_por__first_name', 'creado_por__last_name'],
+            ['activo', 'marca', 'modelo', 'n_serie', 'etiqueta', 'bdo', 'ubicacion', 'asignado_a', 'creado_por__first_name', 'creado_por__last_name'],
             self.paginate_by
         )
         context['page_obj'] = page_obj
@@ -3052,14 +3406,14 @@ class AddMonitorView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         try:
             with transaction.atomic():
                 n_serie = form.cleaned_data.get('n_serie')
-                unive = form.cleaned_data.get('unive')
+                etiqueta = form.cleaned_data.get('etiqueta')
 
                 if Monitor.objects.filter(n_serie=n_serie).exists():
                     form.add_error('n_serie', 'Este número de serie ya está registrado.')
                     return self.form_invalid(form)
 
-                if unive != "0" and Monitor.objects.filter(unive=unive).exists():
-                    form.add_error('unive', 'Este código UNIVE ya está registrado.')
+                if etiqueta != "0" and Monitor.objects.filter(etiqueta=etiqueta).exists():
+                    form.add_error('etiqueta', 'Este código ETIQUETA ya está registrado.')
                     return self.form_invalid(form)
 
                 bdo = form.cleaned_data.get('bdo')
@@ -3081,7 +3435,7 @@ class AddMonitorView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
                         Marca: {monitor.marca}
                         Modelo: {monitor.modelo}
                         N° Serie: {monitor.n_serie}
-                        UNIVE: {monitor.unive}
+                        ETIQUETA: {monitor.etiqueta}
                         BDO: {monitor.bdo}
                         Ubicación: {monitor.ubicacion}
                         """,
@@ -3209,7 +3563,7 @@ class AudioView(LoginRequiredMixin, ListView):
                 Q(marca__icontains=q) |
                 Q(modelo__icontains=q) |
                 Q(n_serie__icontains=q) |
-                Q(unive__icontains=q) |
+                Q(etiqueta__icontains=q) |
                 Q(bdo__icontains=q) |
                 Q(ubicacion__icontains=q) |
                 Q(creado_por__first_name__icontains=q) |
@@ -3274,7 +3628,7 @@ class AddAudioView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         try:
             with transaction.atomic():
                 n_serie = form.cleaned_data.get('n_serie')
-                unive = form.cleaned_data.get('unive')
+                etiqueta = form.cleaned_data.get('etiqueta')
                 bdo = form.cleaned_data.get('bdo')
 
                 # Validación de duplicados
@@ -3282,9 +3636,9 @@ class AddAudioView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
                     form.add_error('n_serie', 'Este número de serie ya está registrado.')
                     return self.form_invalid(form)
 
-                # Validar UNIVE solo si no es "0" o 0
-                if str(unive) not in ["0", 0, "", None] and Audio.objects.filter(unive=unive).exists():
-                    form.add_error('unive', 'Este código UNIVE ya existe para un Equipo de Audio.')
+                # Validar ETIQUETA solo si no es "0" o 0
+                if str(etiqueta) not in ["0", 0, "", None] and Audio.objects.filter(etiqueta=etiqueta).exists():
+                    form.add_error('etiqueta', 'Este código ETIQUETA ya existe para un Equipo de Audio.')
                     return self.form_invalid(form)
                 if bdo != 0 and Audio.objects.filter(bdo=bdo).exists():
                     form.add_error('bdo', 'Este código BDO ya está registrado.')
@@ -3305,7 +3659,7 @@ class AddAudioView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
                         Marca: {audio.marca}
                         Modelo: {audio.modelo}
                         N° Serie: {audio.n_serie}
-                        UNIVE: {audio.unive}
+                        ETIQUETA: {audio.etiqueta}
                         BDO: {audio.bdo}
                         Ubicación: {audio.ubicacion}
                         """,
@@ -3427,7 +3781,7 @@ class TabletView(LoginRequiredMixin, ListView):
                 Q(marca__icontains=q)        |
                 Q(modelo__icontains=q)       |
                 Q(n_serie__icontains=q)      |
-                Q(unive__icontains=q)        |
+                Q(etiqueta__icontains=q)        |
                 Q(bdo__icontains=q)          |
                 Q(netbios__icontains=q)      |
                 Q(ubicacion__icontains=q)    |
@@ -3484,14 +3838,14 @@ class AddTabletView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         try:
             with transaction.atomic():
                 n_serie = form.cleaned_data.get('n_serie')
-                unive = form.cleaned_data.get('unive')
+                etiqueta = form.cleaned_data.get('etiqueta')
                 netbios = form.cleaned_data.get('netbios')
 
                 if Tablet.objects.filter(n_serie=n_serie).exists():
                     form.add_error('n_serie', 'Este número de serie ya está registrado.')
                     return self.form_invalid(form)
-                if unive != "0" and Tablet.objects.filter(unive=unive).exists():
-                    form.add_error('unive', 'Este código UNIVE ya está registrado.')
+                if etiqueta != "0" and Tablet.objects.filter(etiqueta=etiqueta).exists():
+                    form.add_error('etiqueta', 'Este código ETIQUETA ya está registrado.')
                     return self.form_invalid(form)
 
                 if netbios and Tablet.objects.filter(netbios=netbios).exists():
@@ -3513,7 +3867,7 @@ class AddTabletView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
                         Marca: {tablet.marca}
                         Modelo: {tablet.modelo}
                         Número de Serie: {tablet.n_serie}
-                        UNIVE: {tablet.unive}
+                        ETIQUETA: {tablet.etiqueta}
                         NetBIOS: {tablet.netbios}
                         Ubicación: {tablet.ubicacion}
                         """,
@@ -3801,120 +4155,364 @@ class UploadExcelAllInOneView(LoginRequiredMixin, UserPassesTestMixin, FormView)
     template_name = 'upload_excel_allinone.html'
     success_url = reverse_lazy('all_in_one')
 
+
+@add_group_name_to_context
+class UploadExcelEquiposIslaView(LoginRequiredMixin, UserPassesTestMixin, FormView):
+    form_class = UploadExcelForm
+    template_name = 'upload_excel_equipos_isla.html'
+    success_url = reverse_lazy('equipos_isla')
+
+
     def test_func(self):
-        """Solo ADR puede editar"""
+        """Solo ADR u Operadores ADR pueden subir Excel"""
         return self.request.user.groups.first().name in ['ADR', 'Operadores ADR']
 
     def handle_no_permission(self):
-        """Redirección si no tiene permisos"""
         return redirect('error')
 
     def form_valid(self, form):
-        excel_file = form.cleaned_data.get('excel_file')
-        logger.debug(f"Archivo subido: {excel_file}")
-        if not excel_file:
-            messages.error(self.request, "No se ha seleccionado ningún archivo.")
-            return redirect('upload_excel_allinone')
+        excel_file = form.cleaned_data['excel_file']
 
         try:
-            # Leer el archivo Excel
             df = pd.read_excel(excel_file)
-            logger.debug(f"DataFrame leído correctamente con {len(df)} filas")
+            
+            # --- NORMALIZACIÓN DE COLUMNAS ---
+            # Convertimos todas las columnas a minúsculas y quitamos espacios extra
+            df.columns = [str(c).strip().lower() for c in df.columns]
 
-            # Validar que el archivo tenga las columnas esperadas
-            required_columns = ['Estado', 'Activo', 'Marca', 'Modelo', 'N_serie', 'Unive', 'Bdo', 'Netbios', 'Fecha_creacion']
-            missing_columns = [col for col in required_columns if col not in df.columns]
-
-            if missing_columns:
-                messages.error(self.request, f"El archivo Excel no contiene las columnas necesarias: {', '.join(missing_columns)}")
+            # Columnas esperadas en el Excel (todas en minúsculas para coincidir con la normalización)
+            required_columns = [
+               'activo', 'marca', 'modelo',
+                'n_serie', 'etiqueta', 'bdo',
+                'estado', 'ubicacion'
+            ]
+            # 'id', 'fecha_creacion', 'netbios', 'creado_por', 'fecha_modificacion' se omiten o son opcionales
+            
+            missing = [c for c in required_columns if c not in df.columns]
+            
+            # Validación laxa: Solo reportar error si faltan columnas críticas
+            # (Puedes ajustar esta lista según lo que sea estrictamente obligatorio)
+            critical_missing = [c for c in missing if c not in ['netbios', 'fecha_creacion', 'fecha_modificacion', 'id', 'creado_por']]
+            
+            if critical_missing:
+                messages.error(
+                    self.request,
+                    f"El archivo Excel no contiene las columnas necesarias: {', '.join(critical_missing)}"
+                )
                 return self.form_invalid(form)
 
-            # Rellenar valores nulos con "Operativo" para la columna "Estado"
-            if 'Estado' in df.columns:
-                df['Estado'] = df['Estado'].fillna(value='Operativo')
+            from decimal import InvalidOperation
 
-            # Procesar y crear registros AllInOne
-            registros_existentes = 0
-            nuevos_registros = 0
+            nuevos = 0
+            existentes = 0
 
             for _, row in df.iterrows():
-                if not AllInOne.objects.filter(
-                    n_serie=row.get('N_serie', ''),
-                    unive=row.get('Unive', ''),
-                    bdo=row.get('Bdo', '')
-                ).exists():
-                    # Si no existe, crear un nuevo registro
-                    AllInOne.objects.create(
-                        estado=row['Estado'],
-                        activo=row.get('Activo', 'All In One'),
-                        marca=row.get('Marca', 'Seleccione'),
-                        modelo=row.get('Modelo', ''),
-                        n_serie=row.get('N_serie', ''),
-                        unive=row.get('Unive', ''),
-                        bdo=row.get('Bdo', ''),
-                        netbios=row.get('Netbios', ''),
-                        ubicacion=row.get('Ubicacion', 'Seleccione'),
-                        creado_por=self.request.user,
-                        fecha_creacion=row.get('Fecha_creacion', pd.Timestamp.now()),
-                    )
-                    nuevos_registros += 1
-                    logger.debug(f"Registro creado para la fila {row.name + 2}")
+                # --- Limpieza de datos (usando claves en minúsculas) ---
+                # N° serie
+                n_serie_val = row.get('n_serie')
+                # Si es N/D, nan o vacío -> '0'
+                if pd.isna(n_serie_val) or (isinstance(n_serie_val, str) and (n_serie_val.upper() == 'N/D' or n_serie_val.strip() == '')):
+                    n_serie_val = '0'
+
+                # ETIQUETA
+                etiqueta_val = row.get('etiqueta')
+                # Si es nan, vacío o 'N/D' -> '0'
+                if pd.isna(etiqueta_val) or (isinstance(etiqueta_val, str) and (etiqueta_val.strip() == '' or etiqueta_val.strip().upper() == 'N/D')):
+                    etiqueta_val = '0'
+
+                # BDO
+                bdo_val = 0
+                bdo_excel = row.get('bdo')
+                if pd.notna(bdo_excel):
+                    s = str(bdo_excel).replace('-', '')
+                    if s.isdigit():
+                        try:
+                            bdo_val = Decimal(s)
+                        except InvalidOperation:
+                            bdo_val = 0
+                    else:
+                         bdo_val = 0
                 else:
-                    # Contar registros existentes
-                    registros_existentes += 1
+                    bdo_val = 0
 
-            if nuevos_registros > 0:
-                messages.success(self.request, f"El archivo Excel fue procesado exitosamente. {nuevos_registros} registros nuevos añadidos y {registros_existentes} ya existían.")
-            else:
-                messages.info(self.request, f"Todos los registros del archivo ya existen en la base de datos. {registros_existentes} registros encontrados, 0 nuevos añadidos.")
+                # NetBIOS
+                netbios_val = row.get('netbios') if 'netbios' in df.columns else None
+                if pd.isna(netbios_val):
+                    netbios_val = None
 
-            # Enviar notificación por correo
-            self.enviar_notificacion_correo(excel_file, nuevos_registros)
+                # ¿Ya existe?
+                # SOLO verificar duplicados si tiene un n_serie real (distinto de '0').
+                # Si es '0', asumimos que es un equipo sin identificador único y permitimos crearlo (o duplicados permitidos).
+                exists = False
+                if n_serie_val and n_serie_val != '0':
+                    exists = EquiposIslaModel.objects.filter(n_serie=n_serie_val).exists()
 
+                if exists:
+                    existentes += 1
+                    continue
+                
+                # --- VALIDACIÓN PREVIA DE DUPLICADOS PARA EVITAR CRASH ---
+                # Si la etiqueta ya existe en otro equipo, la seteamos a '0' para que no falle la validación del modelo
+                if etiqueta_val != '0' and EquiposIslaModel.objects.filter(etiqueta=etiqueta_val).exists():
+                    etiqueta_val = '0'
+                
+                # Lo mismo para BDO
+                if bdo_val != 0 and EquiposIslaModel.objects.filter(bdo=bdo_val).exists():
+                    bdo_val = 0
+
+                # Crear registro
+                EquiposIslaModel.objects.create(
+                    activo=row.get('activo', ''),
+                    modelo=row.get('modelo', ''),
+                    n_serie=n_serie_val,
+                    etiqueta=etiqueta_val,
+                    bdo=bdo_val,
+                    ubicacion=row.get('ubicacion', ''), # Asegurarse de que en excel sea 'ubicacion' (sin tilde si normalizamos a ascii, pero lower() mantiene tildes. El usuario tiene 'Ubicacion' sin tilde en su captura)
+                    marca=row.get('marca', ''),
+                    estado=row.get('estado', ''),
+                    netbios=netbios_val,
+                    creado_por=self.request.user
+                )
+                nuevos += 1
+
+            messages.success(
+                self.request,
+                f"Archivo procesado correctamente. "
+                f"Nuevos registros: {nuevos}. Ya existentes: {existentes}."
+            )
             return super().form_valid(form)
 
-        except pd.errors.EmptyDataError:
-            messages.error(self.request, "El archivo Excel está vacío. Por favor, sube un archivo válido.")
-            return self.form_invalid(form)
-
         except Exception as e:
-            # Captura del error general y mostrarlo en la plantilla
-            logger.error(f"Error inesperado al procesar el archivo Excel: {str(e)}")
-            messages.error(self.request, f"Hubo un error al procesar el archivo Excel: {str(e)}")
+            logger.exception("Error al procesar Excel de Equipos Isla")
+            messages.error(self.request, f"Ocurrió un error al procesar el archivo: {e}")
             return self.form_invalid(form)
-
-    def enviar_notificacion_correo(self, excel_file, nuevos_registros):
-        """Envía un correo electrónico con la notificación de carga masiva"""
-        try:
-            accion = "Carga de datos masivos"
-            modelo = "AllInOne"
-            mensaje = f"""
-            El usuario {self.request.user.get_full_name()} ha realizado la siguiente acción:
-            Acción: {accion}
-            Modelo: {modelo}
-            Registros nuevos añadidos: {nuevos_registros}
-            """
-
-            email = EmailMessage(
-                subject="Carga de Datos Masivos en AllInOne",
-                body=mensaje,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to=settings.EMAIL_RECIPIENTS
-            )
-
-            # Adjuntar el archivo Excel subido
-            excel_file.seek(0)  # Asegurarse de que el archivo esté en el inicio
-            email.attach(excel_file.name, excel_file.read(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-
-            email.send()
-            logger.info("Correo de notificación enviado exitosamente.")
-        except Exception as e:
-            logger.error(f"Error al enviar correo de notificación: {str(e)}")
-        
-
 
 
 logger = logging.getLogger(__name__)
+
+def upload_excel_equipos_isla(request):
+    if request.method != "POST":
+        return redirect("equipos_isla")
+
+    excel_file = request.FILES.get("excel_file")
+    if not excel_file:
+        messages.error(request, "No se recibió el archivo (revisa el formulario).")
+        return redirect("equipos_isla")
+
+    try:
+        df = pd.read_excel(excel_file)
+    except Exception as e:
+        messages.error(request, f"Error leyendo el archivo: {e}")
+        return redirect("equipos_isla")
+
+    # Mismo cambio de normalización para la función basada en vista (si se usa)
+    df.columns = [str(c).strip().lower() for c in df.columns]
+
+    def s(v):
+        return "" if pd.isna(v) else str(v).strip()
+
+    def bdo_num(v):
+        if pd.isna(v) or v == "":
+            return 0
+        txt = str(v).strip().replace(".", "").replace(",", ".")
+        try:
+            return int(float(txt))
+        except Exception:
+            return 0
+
+    creados = 0
+
+    try:
+        with transaction.atomic():
+            for _, row in df.iterrows():
+                # Usar claves en minúsculas
+                EquiposIslaModel.objects.create(
+                    activo=s(row.get("activo", "Equipos Isla")),
+                    estado=s(row.get("estado", "")),
+                    marca=s(row.get("marca", "")),
+                    modelo=s(row.get("modelo", "")),
+                    n_serie=s(row.get("n_serie", "")), # Ya normalizamos la columna N_serie -> n_serie
+                    etiqueta=s(row.get("etiqueta", "")),
+                    bdo=bdo_num(row.get("bdo", 0)),
+                    netbios=s(row.get("netbios", "")),
+                    ubicacion=s(row.get("ubicacion", "")), # Asumiendo 'ubicacion' o 'ubicación' normalizado
+                    creado_por=request.user if request.user.is_authenticated else None,
+                )
+                creados += 1
+    except Exception as e:
+        logger.exception("Error guardando EquiposIsla desde Excel")
+        messages.error(request, f"Error guardando registros: {e}")
+        return redirect("equipos_isla")
+
+    messages.success(request, f"Excel cargado exitosamente. Registros creados: {creados}")
+    return redirect("equipos_isla")
+
+
+
+#SWITCHES
+@add_group_name_to_context
+class UploadExcelSwitchDeRedView(LoginRequiredMixin, UserPassesTestMixin, FormView):
+    form_class = UploadExcelForm
+    template_name = 'upload_excel_switch_de_red.html'
+    success_url = reverse_lazy('switch_de_red')
+
+
+    def test_func(self):
+        """Solo ADR u Operadores ADR pueden subir Excel"""
+        return self.request.user.groups.first().name in ['ADR', 'Operadores ADR']
+
+    def handle_no_permission(self):
+        return redirect('error')
+
+    def form_valid(self, form):
+        excel_file = form.cleaned_data['excel_file']
+
+        try:
+            df = pd.read_excel(excel_file)
+            
+            # --- NORMALIZACIÓN DE COLUMNAS ---
+            df.columns = [str(c).strip().lower() for c in df.columns]
+
+            required_columns = ['activo', 'marca', 'modelo', 'n_serie', 'etiqueta', 'bdo', 'estado', 'ubicacion']
+            missing = [c for c in required_columns if c not in df.columns]
+            critical_missing = [c for c in missing if c not in ['netbios', 'fecha_creacion', 'fecha_modificacion', 'id', 'creado_por']]
+            
+            if critical_missing:
+                messages.error(self.request, f"Faltan columnas: {', '.join(critical_missing)}")
+                return self.form_invalid(form)
+
+            from decimal import Decimal, InvalidOperation
+
+            # --- OPTIMIZACIÓN: Pre-cargar datos existentes ---
+            existing_n_series = set(SwitchDeRedModel.objects.values_list('n_serie', flat=True))
+            existing_etiquetas = set(SwitchDeRedModel.objects.values_list('etiqueta', flat=True))
+            existing_bdos = set(SwitchDeRedModel.objects.values_list('bdo', flat=True))
+            
+            # Listas para bulk_create
+            registros_nuevos = []
+            nuevos = 0
+            existentes = 0
+            etiquetas_en_lote = set()
+            bdos_en_lote = set()
+
+            for _, row in df.iterrows():
+                # N° serie - normalizar
+                n_serie_val = row.get('n_serie')
+                if pd.isna(n_serie_val) or (isinstance(n_serie_val, str) and (n_serie_val.upper() == 'N/D' or n_serie_val.strip() == '')):
+                    n_serie_val = '0'
+                else:
+                    n_serie_val = str(n_serie_val).strip()
+
+                # Saltar si ya existe (excepto si es '0')
+                if n_serie_val != '0' and n_serie_val in existing_n_series:
+                    existentes += 1
+                    continue
+
+                # ETIQUETA - normalizar
+                etiqueta_val = row.get('etiqueta')
+                if pd.isna(etiqueta_val) or (isinstance(etiqueta_val, str) and (etiqueta_val.strip() == '' or etiqueta_val.strip().upper() == 'N/D')):
+                    etiqueta_val = '0'
+                else:
+                    etiqueta_val = str(etiqueta_val).strip()
+                
+                # Evitar duplicados de etiqueta
+                if etiqueta_val != '0' and (etiqueta_val in existing_etiquetas or etiqueta_val in etiquetas_en_lote):
+                    etiqueta_val = '0'
+                elif etiqueta_val != '0':
+                    etiquetas_en_lote.add(etiqueta_val)
+
+                # BDO - normalizar
+                bdo_val = 0
+                bdo_excel = row.get('bdo')
+                if pd.notna(bdo_excel):
+                    s = str(bdo_excel).replace('-', '').replace('.0', '').strip()
+                    if s.isdigit():
+                        try:
+                            bdo_val = Decimal(s)
+                        except InvalidOperation:
+                            bdo_val = 0
+                
+                # Evitar duplicados de BDO
+                if bdo_val != 0 and (bdo_val in existing_bdos or bdo_val in bdos_en_lote):
+                    bdo_val = 0
+                elif bdo_val != 0:
+                    bdos_en_lote.add(bdo_val)
+
+                # NetBIOS
+                netbios_val = row.get('netbios') if 'netbios' in df.columns else None
+                if pd.isna(netbios_val):
+                    netbios_val = None
+
+                # Crear objeto (sin guardar aún)
+                registro = SwitchDeRedModel(
+                    activo=str(row.get('activo', '')).strip(),
+                    modelo=str(row.get('modelo', '')).strip(),
+                    n_serie=n_serie_val,
+                    etiqueta=etiqueta_val,
+                    bdo=bdo_val,
+                    ubicacion=str(row.get('ubicacion', '')).strip(),
+                    marca=str(row.get('marca', '')).strip(),
+                    estado=str(row.get('estado', '')).strip(),
+                    netbios=netbios_val,
+                    creado_por=self.request.user
+                )
+                registros_nuevos.append(registro)
+                nuevos += 1
+
+            # --- INSERCIÓN MASIVA (mucho más rápido) ---
+            if registros_nuevos:
+                with transaction.atomic():
+                    SwitchDeRedModel.objects.bulk_create(registros_nuevos, batch_size=100)
+
+            messages.success(
+                self.request,
+                f"Archivo procesado. Nuevos: {nuevos}. Ya existentes: {existentes}."
+            )
+            return super().form_valid(form)
+
+        except Exception as e:
+            messages.error(self.request, f"Error al procesar el archivo: {str(e)}")
+            return self.form_invalid(form)
+        
+def upload_excel_switch_de_red(request):
+
+    if request.method == "POST" and request.FILES.get("excel_file"):
+        excel_file = request.FILES["excel_file"]
+
+        try:
+            df = pd.read_excel(excel_file)
+        except Exception as e:
+            messages.error(request, f"Error leyendo el archivo: {e}")
+            return redirect("upload_excel_equipos_isla")
+
+        for _, row in df.iterrows():
+            SwitchDeRedView.objects.create(
+                activo=row.get("Activo", ""),
+                estado=row.get("Estado", ""),
+                marca=row.get("Marca", ""),
+                modelo=row.get("Modelo", ""),
+                n_serie=row.get("N_Serie", ""),
+                etiqueta=row.get("Etiqueta", ""),
+                bdo=row.get("BDO", 0),
+                netbios=row.get("NetBIOS", ""),
+                ubicacion=row.get("Ubicacion", ""),
+            )
+
+        messages.success(request, "Excel cargado exitosamente.")
+        return redirect("switch_de_red")
+
+    return render(request, "upload_excel_switch_de_red.html")
+
+logger = logging.getLogger(__name__)
+
+
+
+
+
+
+
+
+
 
 @add_group_name_to_context
 class UploadExcelNotebookView(LoginRequiredMixin, UserPassesTestMixin, FormView):
@@ -3944,8 +4542,8 @@ class UploadExcelNotebookView(LoginRequiredMixin, UserPassesTestMixin, FormView)
             logger.debug(f"DataFrame leído correctamente con {len(df)} filas")
 
             # Validar que el archivo tenga las columnas esperadas
-            # Columnas del Excel del usuario: Activo, Modelo, N_serie, Unive, Bdo, Estado, Creado_por, Fecha_creacion, Fecha_modificacion, Marca, Ubicacion, Netbios
-            required_columns = ['Estado', 'Activo', 'Marca', 'Modelo', 'N_serie', 'Unive', 'Bdo', 'Netbios', 'Fecha_creacion', 'Ubicación']
+            # Columnas del Excel del usuario: Activo, Modelo, N_serie, Etiqueta, Bdo, Estado, Creado_por, Fecha_creacion, Fecha_modificacion, Marca, Ubicacion, Netbios
+            required_columns = ['Estado', 'Activo', 'Marca', 'Modelo', 'N_serie', 'Etiqueta', 'Bdo', 'Netbios', 'Fecha_creacion', 'Ubicación']
             missing_columns = [col for col in required_columns if col not in df.columns]
 
             if missing_columns:
@@ -3966,14 +4564,14 @@ class UploadExcelNotebookView(LoginRequiredMixin, UserPassesTestMixin, FormView)
 
             for _, row in df.iterrows():
                 # Verificar si el registro ya existe basándonos en los identificadores clave
-                # Usamos .get con '' para n_serie y unive para manejar posibles NaN que pandas podría leer como float
+                # Usamos .get con '' para n_serie y etiqueta para manejar posibles NaN que pandas podría leer como float
                 n_serie_excel = str(row.get('N_serie', '')) if pd.notna(row.get('N_serie')) else None
-                unive_excel = str(row.get('Unive', '')) if pd.notna(row.get('Unive')) else None
+                etiqueta_excel = str(row.get('Etiqueta', '')) if pd.notna(row.get('Etiqueta')) else None
                 bdo_excel = row.get('Bdo') # Ya convertido a None si es NaN
 
                 if not Notebook.objects.filter(
                     n_serie=n_serie_excel,
-                    unive=unive_excel,
+                    etiqueta=etiqueta_excel,
                     bdo=bdo_excel
                 ).exists():
                     # Si no existe, crear un nuevo registro
@@ -3999,7 +4597,7 @@ class UploadExcelNotebookView(LoginRequiredMixin, UserPassesTestMixin, FormView)
                         marca=row.get('Marca', 'Seleccione'),
                         modelo=row.get('Modelo', ''),
                         n_serie=n_serie_excel,
-                        unive=unive_excel,
+                        etiqueta=etiqueta_excel,
                         bdo=bdo_excel,
                         netbios=str(row.get('Netbios', '')) if pd.notna(row.get('Netbios')) else None,
                         ubicacion=row.get('Ubicación', 'Seleccione'), # Corregido a Ubicacion con tilde
@@ -4094,7 +4692,7 @@ class UploadExcelMiniPCView(LoginRequiredMixin, UserPassesTestMixin, FormView):
             logger.debug(f"DataFrame leído correctamente con {len(df)} filas")
 
             # Validar que el archivo tenga las columnas esperadas
-            required_columns = ['Estado', 'Activo', 'Marca', 'Modelo', 'N_serie', 'Unive', 'Bdo', 'Netbios', 'Fecha_creacion']
+            required_columns = ['Estado', 'Activo', 'Marca', 'Modelo', 'N_serie', 'Etiqueta', 'Bdo', 'Netbios', 'Fecha_creacion']
             missing_columns = [col for col in required_columns if col not in df.columns]
 
             if missing_columns:
@@ -4112,21 +4710,21 @@ class UploadExcelMiniPCView(LoginRequiredMixin, UserPassesTestMixin, FormView):
 
             for _, row in df.iterrows():
                 # Obtener valores y manejar NaN/vacío para campos que podrían ser numéricos
-                unive_value = row.get('Unive', None)
+                etiqueta_value = row.get('Etiqueta', None)
                 bdo_value = row.get('Bdo', None)
 
-                # Convertir NaN o cadena vacía a un valor por defecto (0 para 'unive' ya que no puede ser null)
-                if pd.isna(unive_value) or (isinstance(unive_value, str) and unive_value.strip() == ''):
-                    unive_value = 0 # Usar 0 como valor por defecto para 'unive'
+                # Convertir NaN o cadena vacía a un valor por defecto (0 para 'etiqueta' ya que no puede ser null)
+                if pd.isna(etiqueta_value) or (isinstance(etiqueta_value, str) and etiqueta_value.strip() == ''):
+                    etiqueta_value = 0 # Usar 0 como valor por defecto para 'etiqueta'
                 # Convertir NaN o cadena vacía a None para campos que esperan números nulos (si 'bdo' permite null)
                 if pd.isna(bdo_value) or (isinstance(bdo_value, str) and bdo_value.strip() == ''):
                     bdo_value = None # Mantener None para 'bdo' si permite null
 
                 # Verificar si el registro ya existe basándonos en los identificadores clave
-                # Usar los valores ya procesados (0 para 'unive', None si es NaN/vacío para 'bdo')
+                # Usar los valores ya procesados (0 para 'etiqueta', None si es NaN/vacío para 'bdo')
                 if not MiniPC.objects.filter(
                     n_serie=row.get('N_serie', ''),
-                    unive=unive_value,
+                    etiqueta=etiqueta_value,
                     bdo=bdo_value
                 ).exists():
                     # Si no existe, crear un nuevo registro
@@ -4136,7 +4734,7 @@ class UploadExcelMiniPCView(LoginRequiredMixin, UserPassesTestMixin, FormView):
                         marca=row.get('Marca', 'Seleccione'),
                         modelo=row.get('Modelo', ''),
                         n_serie=row.get('N_serie', ''),
-                        unive=unive_value,
+                        etiqueta=etiqueta_value,
                         bdo=bdo_value,
                         netbios=row.get('Netbios', ''),
                         ubicacion=row.get('Ubicacion', 'Seleccione'),
@@ -4230,7 +4828,7 @@ class UploadExcelProyectorView(LoginRequiredMixin, UserPassesTestMixin, FormView
             logger.debug(f"DataFrame leído correctamente con {len(df)} filas")
 
             # Validar que el archivo tenga las columnas esperadas
-            required_columns = ['Estado', 'Activo', 'Marca', 'Modelo', 'N_serie', 'Unive', 'Bdo', 'Fecha_creacion', 'Netbios']
+            required_columns = ['Estado', 'Activo', 'Marca', 'Modelo', 'N_serie', 'Etiqueta', 'Bdo', 'Fecha_creacion', 'Netbios']
             missing_columns = [col for col in required_columns if col not in df.columns]
 
             if missing_columns:
@@ -4242,8 +4840,8 @@ class UploadExcelProyectorView(LoginRequiredMixin, UserPassesTestMixin, FormView
             df['Marca'] = df['Marca'].fillna(value='Seleccione')
             df['Ubicacion'] = df['Ubicacion'].fillna(value='Seleccione')
 
-            # Reemplazar `nan` con `None` para los campos UNIVE y NETBIOS
-            df['Unive'] = df['Unive'].replace({pd.NA: None, 'nan': None}).fillna(value='')
+            # Reemplazar `nan` con `None` para los campos ETIQUETA y NETBIOS
+            df['Etiqueta'] = df['Etiqueta'].replace({pd.NA: None, 'nan': None}).fillna(value='')
             df['Netbios'] = df['Netbios'].replace({pd.NA: None, 'nan': None}).fillna(value='')
             # Convertir NaN en Bdo a 0 y asegurar que sea de tipo numérico (entero en este caso)
             df['Bdo'] = pd.to_numeric(df['Bdo'], errors='coerce').fillna(value=0).astype(int)
@@ -4258,7 +4856,7 @@ class UploadExcelProyectorView(LoginRequiredMixin, UserPassesTestMixin, FormView
                 # Verificar si el registro ya existe basándonos en los identificadores clave
                 if not Proyectores.objects.filter(
                     n_serie=row.get('N_serie', ''),
-                    unive=row.get('Unive', ''),
+                    etiqueta=row.get('Etiqueta', ''),
                     bdo=row.get('Bdo', 0)
                 ).exists():
                     # Si no existe, crear un nuevo registro
@@ -4268,7 +4866,7 @@ class UploadExcelProyectorView(LoginRequiredMixin, UserPassesTestMixin, FormView
                         marca=row['Marca'],
                         modelo=row.get('Modelo', ''),
                         n_serie=row.get('N_serie', ''),
-                        unive=row.get('Unive', ''),
+                        etiqueta=row.get('Etiqueta', ''),
                         bdo=row.get('Bdo', 0),
                         netbios=row.get('Netbios', ''),
                         ubicacion=row.get('Ubicacion', 'Seleccione'),
@@ -4354,7 +4952,7 @@ class UploadExcelBodegaADRView(LoginRequiredMixin, UserPassesTestMixin, FormView
             df = pd.read_excel(excel_file)
 
             # Validar que el archivo tenga las columnas esperadas
-            required_columns = ['Activo', 'Marca', 'Modelo', 'N_serie', 'Unive', 'Bdo', 'Netbios', 'Ubicacion', 'Fecha_creacion', 'Estado']
+            required_columns = ['Activo', 'Marca', 'Modelo', 'N_serie', 'Etiqueta', 'Bdo', 'Netbios', 'Ubicacion', 'Fecha_creacion', 'Estado']
             missing_columns = [col for col in required_columns if col not in df.columns]
 
             if missing_columns:
@@ -4367,13 +4965,13 @@ class UploadExcelBodegaADRView(LoginRequiredMixin, UserPassesTestMixin, FormView
 
             for _, row in df.iterrows():
                 # Obtener valores y manejar NaN/vacío para campos que podrían ser numéricos o tener valor por defecto
-                unive_value = row.get('Unive', None)
+                etiqueta_value = row.get('Etiqueta', None)
                 bdo_value = row.get('Bdo', None)
                 ubicacion_value = row.get('Ubicacion', 'Bueno') # Usar 'Ubicacion' del Excel para el campo renombrado 'ubicacion', con default 'Bueno'
 
-                # Convertir NaN o cadena vacía a un valor por defecto (0 para 'unive' ya que no puede ser null)
-                if pd.isna(unive_value) or (isinstance(unive_value, str) and unive_value.strip() == ''):
-                    unive_value = None # Usar None como valor por defecto para 'unive' ya que es CharField(null=True)
+                # Convertir NaN o cadena vacía a un valor por defecto (0 para 'etiqueta' ya que no puede ser null)
+                if pd.isna(etiqueta_value) or (isinstance(etiqueta_value, str) and etiqueta_value.strip() == ''):
+                    etiqueta_value = None # Usar None como valor por defecto para 'etiqueta' ya que es CharField(null=True)
                 # Convertir NaN o cadena vacía a None para campos que esperan números nulos (si 'bdo' permite null)
                 if pd.isna(bdo_value) or (isinstance(bdo_value, str) and bdo_value.strip() == ''):
                     bdo_value = None # Mantener None para 'bdo' if it allows null
@@ -4383,7 +4981,7 @@ class UploadExcelBodegaADRView(LoginRequiredMixin, UserPassesTestMixin, FormView
                 # Usar los valores ya procesados
                 if not BodegaADR.objects.filter(
                     n_serie=row.get('N_serie', ''),
-                    unive=unive_value,
+                    etiqueta=etiqueta_value,
                     bdo=bdo_value
                 ).exists():
                     # Si no existe, crear un nuevo registro
@@ -4394,7 +4992,7 @@ class UploadExcelBodegaADRView(LoginRequiredMixin, UserPassesTestMixin, FormView
                         marca=row.get('Marca', 'Seleccione'),
                         modelo=row.get('Modelo', ''),
                         n_serie=row.get('N_serie', ''),
-                        unive=unive_value,
+                        etiqueta=etiqueta_value,
                         bdo=bdo_value,
                         netbios=row.get('Netbios', ''),
                         creado_por=self.request.user,
@@ -4488,8 +5086,8 @@ class UploadExcelAzoteaView(LoginRequiredMixin, UserPassesTestMixin, FormView):
             logger.debug(f"DataFrame leído correctamente con {len(df)} filas")
 
             # Validar que el archivo tenga las columnas esperadas
-            # Excel columns: Id, Activo, Modelo, N_serie, Unive, Bdo, Ubicación, Creado, Fecha, Fecha_, Marca, Estado, Netbios
-            required_columns = ['Activo', 'Modelo', 'N_serie', 'Unive', 'Bdo', 'Ubicación', 'Marca', 'Estado', 'Fecha_creacion'] # Netbios es opcional
+            # Excel columns: Id, Activo, Modelo, N_serie, Etiqueta, Bdo, Ubicación, Creado, Fecha, Fecha_, Marca, Estado, Netbios
+            required_columns = ['Activo', 'Modelo', 'N_serie', 'Etiqueta', 'Bdo', 'Ubicación', 'Marca', 'Estado', 'Fecha_creacion'] # Netbios es opcional
             missing_columns = [col for col in required_columns if col not in df.columns]
 
             if missing_columns:
@@ -4509,8 +5107,8 @@ class UploadExcelAzoteaView(LoginRequiredMixin, UserPassesTestMixin, FormView):
                 elif pd.isna(n_serie_val):
                     n_serie_val = None
 
-                unive_val = row.get('Unive')
-                if pd.isna(unive_val): unive_val = None
+                etiqueta_val = row.get('Etiqueta')
+                if pd.isna(etiqueta_val): etiqueta_val = None
                 
                 bdo_excel_str = row.get('Bdo')
                 bdo_val = None
@@ -4539,7 +5137,7 @@ class UploadExcelAzoteaView(LoginRequiredMixin, UserPassesTestMixin, FormView):
                 if n_serie_val is not None: # Solo filtrar por n_serie si no es None para evitar problemas con multiples None
                     filter_args['n_serie'] = n_serie_val
                 # Añadir otros campos al filtro si son necesarios para unicidad y no son None
-                # Por ejemplo, si unive y bdo juntos con n_serie (o modelo si n_serie es None) definen unicidad
+                # Por ejemplo, si etiqueta y bdo juntos con n_serie (o modelo si n_serie es None) definen unicidad
                 # Para este ejemplo, nos basaremos principalmente en n_serie si existe.
                 # Si n_serie es None, la lógica de duplicados podría necesitar ser más robusta o aceptar duplicados.
                 
@@ -4559,7 +5157,7 @@ class UploadExcelAzoteaView(LoginRequiredMixin, UserPassesTestMixin, FormView):
                         marca=row.get('Marca'),
                         modelo=row.get('Modelo'),
                         n_serie=n_serie_val,
-                        unive=unive_val,
+                        etiqueta=etiqueta_val,
                         bdo=bdo_val,
                         netbios=netbios_val,
                         creado_por=self.request.user,
@@ -4657,7 +5255,7 @@ class UploadExcelAllInOneAdmView(LoginRequiredMixin, UserPassesTestMixin, FormVi
             logger.debug(f"DataFrame leído correctamente con {len(df)} filas")
 
             # Validar que el archivo tenga las columnas esperadas
-            required_columns = ['Estado', 'Activo', 'Marca', 'Modelo', 'N_serie', 'Unive', 'Bdo', 'Netbios', 'Fecha_creacion']
+            required_columns = ['Estado', 'Activo', 'Marca', 'Modelo', 'N_serie', 'Etiqueta', 'Bdo', 'Netbios', 'Fecha_creacion']
             missing_columns = [col for col in required_columns if col not in df.columns]
 
             if missing_columns:
@@ -4674,21 +5272,21 @@ class UploadExcelAllInOneAdmView(LoginRequiredMixin, UserPassesTestMixin, FormVi
 
             for _, row in df.iterrows():
                 # Obtener valores y manejar NaN/vacío para campos que podrían ser numéricos
-                unive_value = row.get('Unive', None)
+                etiqueta_value = row.get('Etiqueta', None)
                 bdo_value = row.get('Bdo', None)
 
-                # Convertir NaN o cadena vacía a un valor por defecto (0 para 'unive' ya que no puede ser null)
-                if pd.isna(unive_value) or (isinstance(unive_value, str) and unive_value.strip() == ''):
-                    unive_value = 0 # Usar 0 como valor por defecto para 'unive'
+                # Convertir NaN o cadena vacía a un valor por defecto (0 para 'etiqueta' ya que no puede ser null)
+                if pd.isna(etiqueta_value) or (isinstance(etiqueta_value, str) and etiqueta_value.strip() == ''):
+                    etiqueta_value = 0 # Usar 0 como valor por defecto para 'etiqueta'
                 # Convertir NaN o cadena vacía a None para campos que esperan números nulos (si 'bdo' permite null)
                 if pd.isna(bdo_value) or (isinstance(bdo_value, str) and bdo_value.strip() == ''):
                     bdo_value = None # Mantener None para 'bdo' si permite null
 
                 # Verificar si el registro ya existe basándonos en los identificadores clave
-                # Usar los valores ya procesados (0 para 'unive', None si es NaN/vacío para 'bdo')
+                # Usar los valores ya procesados (0 para 'etiqueta', None si es NaN/vacío para 'bdo')
                 if not AllInOneAdmins.objects.filter(
                     n_serie=row.get('N_serie', ''),
-                    unive=unive_value,
+                    etiqueta=etiqueta_value,
                     bdo=bdo_value
                 ).exists():
                     # Si no existe, crear un nuevo registro
@@ -4698,7 +5296,7 @@ class UploadExcelAllInOneAdmView(LoginRequiredMixin, UserPassesTestMixin, FormVi
                         marca=row.get('Marca', 'Seleccione'),
                         modelo=row.get('Modelo', ''),
                         n_serie=row.get('N_serie', ''),
-                        unive=unive_value,
+                        etiqueta=etiqueta_value,
                         bdo=bdo_value,
                         netbios=row.get('Netbios', ''),
                         ubicacion=row.get('Ubicacion', 'Seleccione'),
@@ -4783,6 +5381,7 @@ def buscar_global(request):
         {'modelo_class': MiniPC, 'nombre_plural': 'Mini PCs', 'url_detalle_name': 'detalle_minipc', 'modelo_name': 'MiniPC'},
         {'modelo_class': Proyectores, 'nombre_plural': 'Proyectores', 'url_detalle_name': 'detalle_proyector', 'modelo_name': 'Proyectores'},
         {'modelo_class': AllInOne, 'nombre_plural': 'All In Ones', 'url_detalle_name': 'detalle_allinone', 'modelo_name': 'AllInOne'},
+        {'modelo_class': EquiposIslaModel, 'nombre_plural': 'All In Ones', 'url_detalle_name': 'detalle_allinone', 'modelo_name': 'AllInOne'},
         {'modelo_class': AllInOneAdmins, 'nombre_plural': 'All In Ones Administrativos', 'url_detalle_name': 'detalle_allinone_admin', 'modelo_name': 'AllInOneAdmins'},
         {'modelo_class': BodegaADR, 'nombre_plural': 'Equipos en Bodega ADR', 'url_detalle_name': 'detalle_bodegaadr', 'modelo_name': 'BodegaADR'},
         {'modelo_class': Azotea, 'nombre_plural': 'Equipos en Azotea', 'url_detalle_name': 'detalle_azotea', 'modelo_name': 'Azotea'},
@@ -4799,7 +5398,7 @@ def buscar_global(request):
             modelo = info['modelo_class']
             q_expressions = Q()
             
-            campos_texto_generales = ['activo', 'modelo', 'unive', 'estado', 'marca', 'netbios', 'ubicacion']
+            campos_texto_generales = ['activo', 'modelo', 'etiqueta', 'estado', 'marca', 'netbios', 'ubicacion']
             # Para Notebook, también buscar en 'asignado_a'
             if info['modelo_name'] == 'Notebook':
                 campos_texto_generales.append('asignado_a')
@@ -4961,7 +5560,7 @@ class UploadExcelMonitorView(LoginRequiredMixin, UserPassesTestMixin, FormView):
                 'marca': 'marca',
                 'modelo': 'modelo',
                 'n_serie': 'n_serie',
-                'unive': 'unive',
+                'etiqueta': 'etiqueta',
                 'bdo': 'bdo',
                 'ubicacion': 'ubicacion',
                 'fecha_creacion': 'fecha_creacion',
@@ -5180,7 +5779,7 @@ class UploadExcelAudioView(LoginRequiredMixin, UserPassesTestMixin, FormView):
                 'marca': 'marca',
                 'modelo': 'modelo',
                 'n_serie': 'n_serie',
-                'unive': 'unive',
+                'etiqueta': 'etiqueta',
                 'bdo': 'bdo',
                 'ubicacion': 'ubicacion',
             }
@@ -5332,7 +5931,7 @@ class UploadExcelTabletView(LoginRequiredMixin, UserPassesTestMixin, FormView):
                 'marca': 'marca',
                 'modelo': 'modelo',
                 'n_serie': 'n_serie',
-                'unive': 'unive',
+                'etiqueta': 'etiqueta',
                 'bdo': 'bdo',
                 'netbios': 'netbios',
                 'almacenamiento': 'almacenamiento',
@@ -5427,5 +6026,46 @@ class UploadExcelTabletView(LoginRequiredMixin, UserPassesTestMixin, FormView):
     def form_invalid(self, form):
         messages.error(self.request, 'Error al subir el archivo. Por favor, verifique el formulario.')
         return super().form_invalid(form)
+    
+
+def upload_excel_equipos_isla(request):
+    if request.method == "POST":
+
+        excel_file = request.FILES.get("excel_file")
+
+        if not excel_file:
+            messages.error(request, "No se adjuntó ningún archivo.")
+            return redirect("equipos_isla")
+
+        try:
+            wb = openpyxl.load_workbook(excel_file)
+            sheet = wb.active
+
+            # SALTAR LA FILA DE ENCABEZADOS
+            for row in sheet.iter_rows(min_row=2, values_only=True):
+                activo, estado, marca, modelo, n_serie, etiqueta, bdo, netbios, ubicacion, fecha_modificación, = row[0:9]
+
+                EquiposIslaModel.objects.create(
+                    activo=activo,
+                    estado=estado,
+                    marca=marca,
+                    modelo=modelo,
+                    n_serie=n_serie,
+                    etiqueta=etiqueta,
+                    bdo=bdo,
+                    netbios=netbios,
+                    ubicacion=ubicacion,
+                    fecha_modificación=fecha_modificación,
+                    creado_por=request.user,
+                )
+
+            messages.success(request, "Excel cargado correctamente.")
+            return redirect("equipos_isla")
+
+        except Exception as e:
+            messages.error(request, f"Error al procesar el archivo: {str(e)}")
+            return redirect("equipos_isla")
+
+    return render(request, "upload_excel_equipos_isla.html")
 
 # Add email notification method if needed, similar to other upload views

@@ -108,17 +108,17 @@
         </div>
     </div>
 
-    <!-- Segunda fila: UNIVE, BDO, NetBios -->
+    <!-- Segunda fila: ETIQUETA, BDO, NetBios -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
 
-        <!--UNIVE-->
+        <!--ETIQUETA-->
 
         <div>
-            <label for="unive" class="block text-black text-sm font-sans italic mb-1">UNIVE</label>
-            <input type="text" id="unive" name="unive" value="{{ form.unive.value|default:'' }}"
+            <label for="etiqueta" class="block text-black text-sm font-sans italic mb-1">Etiqueta</label>
+            <input type="text" id="etiqueta" name="etiqueta" value="{{ form.etiqueta.value|default:'' }}"
                 required class="w-full rounded-md border-gray-300 shadow-sm">
-            {% if form.unive.errors %}
-                <p class="text-orange-600 text-sm mt-1">{{ form.unive.errors.0 }}</p>
+            {% if form.etiqueta.errors %}
+                <p class="text-orange-600 text-sm mt-1">{{ form.etiqueta.errors.0 }}</p>
             {% endif %}
         </div>
 

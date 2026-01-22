@@ -123,7 +123,7 @@
                   <th>Marca</th>
                   <th>Modelo</th>
                   <th>N° Serie</th>
-                  <th>UNIVE</th>
+                  <th>ETIQUETA</th>
                   <th>BDO</th>
                   <th>NetBios</th>
                   <th>Ubicación</th>
@@ -171,15 +171,15 @@
                     </div>
                   </td>
 
-                  <!-- UNIVE con copiar -->
+                  <!-- ETIQUETA con copiar -->
                   <td class="font-mono">
                     <div class="flex items-center gap-1">
-                      <span class="td-trunc">{{ r.unive|default_if_none:"" }}</span>
-                      {% if r.unive %}
+                      <span class="td-trunc">{{ r.etiqueta|default_if_none:"" }}</span>
+                      {% if r.etiqueta %}
                       <button type="button"
                               class="copy-btn js-copy"
-                              data-copy="{{ r.unive|default_if_none:''|escape }}"
-                              title="Copiar UNIVE" aria-label="Copiar UNIVE">
+                              data-copy="{{ r.etiqueta|default_if_none:''|escape }}"
+                              title="Copiar ETIQUETA" aria-label="Copiar ETIQUETA">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
                           <rect x="9" y="9" width="13" height="13" rx="2"></rect>
                           <path d="M5 15V5a2 2 0 0 1 2-2h10"></path>

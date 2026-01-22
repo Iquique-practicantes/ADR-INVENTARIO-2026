@@ -111,17 +111,17 @@
             {% endfor %}
         </div>
 
-        <!-- Segunda fila: UNIVE, BDO, NetBios -->
+        <!-- Segunda fila: ETIQUETA, BDO, NetBios -->
 
-        <!-- UNIVE -->
+        <!-- Etiqueta -->
 
         <div>
-            <label for="unive" class="block text-black text-sm font-sans italic mb-1">UNIVE</label>
-            <input type="text" id="unive" name="unive"
-                value="{{ form.unive.value|default:'' }}"
+            <label for="etiqueta" class="block text-black text-sm font-sans italic mb-1">Etiqueta</label>
+            <input type="text" id="etiqueta" name="etiqueta"
+                value="{{ form.etiqueta.value|default:'' }}"
                 required
                 class="w-full rounded-md border-gray-300 shadow-sm">
-            {% for error in form.unive.errors %}
+            {% for error in form.etiqueta.errors %}
                 <p class="text-red-600 text-sm mt-1">{{ error }}</p>
             {% endfor %}
         </div>

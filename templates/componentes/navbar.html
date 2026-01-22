@@ -39,13 +39,15 @@
 
     {# Columna CENTRO: icono + título más a la izquierda #}
     <div class="flex items-center gap-2 justify-center justify-self-start -ml-10">
-      <img src="{% static 'imagenes/favicon.ico' %}" alt="Logo Inacap"
-           class="w-7 h-7 object-contain">
-      <h1 class="font-semibold leading-none text-white
-                 text-sm sm:text-base md:text-lg lg:text-xl text-center
-                 truncate max-w-[60vw]">
-        PLATAFORMA DE INVENTARIO ADR
-      </h1>
+      <a href="{% url 'home' %}" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+        <img src="{% static 'imagenes/logo_adr.png' %}" alt="Logo ADR"
+             class="w-7 h-7 object-contain">
+        <h1 class="font-semibold leading-none text-white
+                   text-sm sm:text-base md:text-lg lg:text-xl text-center
+                   truncate max-w-[60vw]">
+          PLATAFORMA DE INVENTARIO ADR
+        </h1>
+      </a>
     </div>
 
     {# Columna DERECHA: info usuario + avatar + acciones #}

@@ -10,7 +10,7 @@ from .opciones import (
     opciones_marca_proyector, opciones_ubicacion_proyector, opciones_activos,
     opciones_marca_azotea, opciones_estado_activo,
     opciones_edificio, opciones_marca_monitor, opciones_ubicacion_monitor,
-    opciones_marca_audio, opciones_ubicacion_audio,
+    opciones_marca_audio, opciones_ubicacion_audio 
 )
 
 class ActivoBase(models.Model):
@@ -19,7 +19,7 @@ class ActivoBase(models.Model):
     modelo = models.CharField(max_length=100, verbose_name='Modelo')
     # Removido unique=True para permitir duplicados históricos
     n_serie = models.CharField(max_length=100, verbose_name='Número Serie', blank=True, null=True)
-    unive = models.CharField(max_length=100, verbose_name='UNIVE', blank=True, null=True)
+    etiqueta = models.CharField(max_length=100, verbose_name='Etiqueta', blank=True, null=True)
     bdo = models.DecimalField(max_digits=30, decimal_places=0, verbose_name='BDO', null=True, blank=True, default=0)
     estado = models.CharField(max_length=100, default='Activo', verbose_name='Estado', blank=True, null=True)
     creado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='%(class)s_created', verbose_name='Registrador por')
@@ -43,10 +43,10 @@ class EquipoInformatico(ActivoBase):
     def clean(self):
         super().clean()
 
-        unive = str(self.unive).strip() if self.unive not in [None, ''] else '0'
+        etiqueta = str(self.etiqueta).strip() if self.etiqueta not in [None, ''] else '0'
         bdo = str(self.bdo).strip() if self.bdo not in [None, ''] else '0'
 
-        if unive == '0' and bdo == '0':
+        if etiqueta == '0' and bdo == '0':
             return
 
         model_class = self.__class__
@@ -55,14 +55,14 @@ class EquipoInformatico(ActivoBase):
         if bdo != '0' and qs.filter(bdo=bdo).exists():
             raise ValidationError({'bdo': "Este código BDO ya está registrado."})
 
-        if unive != '0' and qs.filter(unive=unive).exists():
-            raise ValidationError({'unive': "Este código UNIVE ya está registrado."})
+        if etiqueta != '0' and qs.filter(etiqueta=etiqueta).exists():
+            raise ValidationError({'etiqueta': "Este código Etiqueta ya está registrado."})
 
-        if unive == '0' and bdo != '0' and qs.filter(bdo=bdo).exists():
-            raise ValidationError({'bdo': "Este BDO ya está registrado y el UNIVE es 0. No se permite."})
+        if etiqueta == '0' and bdo != '0' and qs.filter(bdo=bdo).exists():
+            raise ValidationError({'bdo': "Este BDO ya está registrado y el Etiqueta es 0. No se permite."})
 
-        if bdo == '0' and unive != '0' and qs.filter(unive=unive).exists():
-            raise ValidationError({'unive': "Este UNIVE ya está registrado y el BDO es 0. No se permite."})
+        if bdo == '0' and etiqueta != '0' and qs.filter(etiqueta=etiqueta).exists():
+            raise ValidationError({'etiqueta': "Este Etiqueta ya está registrado y el BDO es 0. No se permite."})
 
     # Si ambos son 0, permitir sin restricciones
     def save(self, *args, **kwargs):
@@ -94,6 +94,23 @@ class AllInOne(EquipoInformatico):
 
     def get_absolute_url(self):
         return reverse('detalle_allinone', kwargs={'pk': self.pk})
+    
+    
+class SwitchDeRed(EquipoInformatico):
+    marca = models.CharField(max_length=100, default='', verbose_name='Marca')
+    ubicacion = models.CharField(max_length=100, default='Seleccione', verbose_name='Ubicación')
+    netbios = models.CharField(max_length=100, verbose_name='NetBIOS', null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Switch De Red'
+        verbose_name_plural = 'Switches De Redes'
+        ordering = ['ubicacion', '-fecha_creacion']
+        indexes = [ models.Index(fields=['creado_por'], name='idx_switchdered_creado_por'),]
+
+    def get_absolute_url(self):
+        return reverse('detalle_switchdered', kwargs={'pk': self.pk})
+
+
 
 class AllInOneAdmins(EquipoInformatico):
     marca = models.CharField(max_length=100, default='', verbose_name='Marca')
@@ -200,12 +217,34 @@ class Tablet(EquipoInformatico):
     def get_absolute_url(self):
         return reverse('detalle_tablet', kwargs={'pk': self.pk}) # TODO: Crear URL 'detalle_tablet'
 
+
+####
+class EquiposIsla(EquipoInformatico):
+    # fijo el tipo por defecto (opcional)
+    activo = models.CharField(max_length=150, default='Equipos Isla', verbose_name='Activo')
+
+    marca = models.CharField(max_length=100, default='', verbose_name='Marca')
+    ubicacion = models.CharField(max_length=100, default='Seleccione', verbose_name='Ubicación')
+    netbios = models.CharField(max_length=100, verbose_name='NetBIOS', null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Equipo Isla'
+        verbose_name_plural = 'Equipos Islas'
+        ordering = ['ubicacion', '-fecha_creacion']
+        indexes = [
+            models.Index(fields=['creado_por'], name='idx_equiposisla_creado_por'),
+        ]
+
+    def get_absolute_url(self):
+        return reverse('detalle_equiposisla', kwargs={'pk': self.pk})
+
+
 class Eliminados(models.Model):
     """Modelo para guardar registros que han sido eliminados de las tablas originales."""
     activo = models.CharField(max_length=150, verbose_name='Activo', null=True, blank=True)
     modelo = models.CharField(max_length=100, verbose_name='Modelo', null=True, blank=True)
     n_serie = models.CharField(max_length=100, verbose_name='Número Serie', null=True, blank=True)
-    unive = models.CharField(max_length=100, verbose_name='UNIVE', null=True, blank=True)
+    etiqueta = models.CharField(max_length=100, verbose_name='Etiqueta', null=True, blank=True)
     bdo = models.DecimalField(max_digits=30, decimal_places=0, verbose_name='BDO', null=True, blank=True)
     estado = models.CharField(max_length=100, verbose_name='Estado', null=True, blank=True)
     marca = models.CharField(max_length=100, verbose_name='Marca', null=True, blank=True)

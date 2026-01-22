@@ -9,7 +9,7 @@ from accounts.models import Profile
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import (
     AllInOne, AllInOneAdmins, Notebook, MiniPC,
-    Proyectores, BodegaADR, Azotea, Monitor, Audio, Tablet # Nuevos modelos
+    Proyectores, BodegaADR, Azotea, Monitor, Audio, Tablet, EquiposIsla, SwitchDeRed # Nuevos modelos
 )
 from accounts.models import Profile
 from .opciones import (
@@ -227,7 +227,7 @@ class AllInOneForm(forms.ModelForm):
     
     class Meta:
         model = AllInOne
-        fields = ['activo', 'estado', 'marca', 'modelo', 'n_serie', 'unive', 'bdo', 'netbios', 'ubicacion']
+        fields = ['activo', 'estado', 'marca', 'modelo', 'n_serie', 'etiqueta', 'bdo', 'netbios', 'ubicacion']
         widgets = {
             'estado': forms.Select(choices=opciones_estado),
             'marca': forms.TextInput(attrs={
@@ -310,10 +310,132 @@ class AllInOneAdminsForm(forms.ModelForm):
             }
         )
     )
-    
+
+
+
+
+class EquiposIslaForm(forms.ModelForm):
+    class Meta:
+        model = EquiposIsla
+        fields = ['activo', 'marca', 'modelo', 'n_serie', 'etiqueta', 
+                  'bdo', 'estado', 'netbios', 'ubicacion', 'creado_por', 
+                  ]
+        widgets = {
+                'estado': forms.Select(choices=opciones_estado),
+                'marca': forms.TextInput(attrs={
+                'class': 'w-full rounded-md shadow-sm border-gray-300', # Clases de Tailwind para input
+                'list': 'marcas_list', # Apunta al ID del datalist
+                'placeholder': 'Seleccione o escriba una marca'
+            }),
+            'ubicacion': forms.TextInput(attrs={
+                'class': 'w-full rounded-md border-gray-300 shadow-sm',
+                'placeholder': 'Ingrese la ubicación'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Establecer el valor inicial para 'marca' si estamos editando
+        if self.instance and self.instance.pk:
+            self.initial['marca'] = self.instance.marca
+
+    def clean_marca(self):
+        marca = self.cleaned_data.get('marca')
+        if not marca:
+            raise forms.ValidationError('Este campo es obligatorio.')
+        # Aquí podrías añadir lógica para capitalizar la marca o limpiarla si es necesario.
+        # Por ejemplo: marca = marca.strip().capitalize()
+        return marca.strip()
+
+
+    def clean_n_serie(self):
+        """Validación para número de serie único"""
+        n_serie = self.cleaned_data.get('n_serie')
+        print(f"Validando n_serie: {n_serie}, Instance ID: {self.instance.id}")
+        if EquiposIsla.objects.exclude(id=self.instance.id).filter(n_serie=n_serie).exists():
+            raise forms.ValidationError('Este Número de Serie ya existe')
+        return n_serie
+
+    def clean_modelo(self):
+        """Validación para campo modelo obligatorio"""
+        modelo = self.cleaned_data.get('modelo')
+        if not modelo:
+            raise forms.ValidationError('Este campo es obligatorio')
+        return modelo
+
+    def clean_activo(self):
+        """
+        Asegura que el valor del campo activo siempre sea 'Equipos Isla'
+        incluso si alguien intenta modificarlo
+        """
+        return 'Equipos Isla'
+
+
+
+class SwitchDeRedForm(forms.ModelForm):
+    class Meta:
+        model = SwitchDeRed
+        fields = ['activo', 'marca', 'modelo', 'n_serie', 'etiqueta', 'bdo', 'estado', 
+                  'netbios', 'ubicacion', 'creado_por',]
+        widgets = {
+            'estado': forms.Select(choices=opciones_estado),
+            'marca': forms.TextInput(attrs={
+                'class': 'w-full rounded-md shadow-sm border-gray-300', # Clases de Tailwind para input
+                'list': 'marcas_list', # Apunta al ID del datalist
+                'placeholder': 'Seleccione o escriba una marca'
+            }),
+            'ubicacion': forms.TextInput(attrs={
+                'class': 'w-full rounded-md border-gray-300 shadow-sm',
+                'placeholder': 'Ingrese la ubicación'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Establecer el valor inicial para 'marca' si estamos editando
+        if self.instance and self.instance.pk:
+            self.initial['marca'] = self.instance.marca
+
+    def clean_marca(self):
+        marca = self.cleaned_data.get('marca')
+        if not marca:
+            raise forms.ValidationError('Este campo es obligatorio.')
+        # Aquí podrías añadir lógica para capitalizar la marca o limpiarla si es necesario.
+        # Por ejemplo: marca = marca.strip().capitalize()
+        return marca.strip()
+
+
+    def clean_n_serie(self):
+        """Validación para número de serie único"""
+        n_serie = self.cleaned_data.get('n_serie')
+        print(f"Validando n_serie: {n_serie}, Instance ID: {self.instance.id}")
+        if SwitchDeRed.objects.exclude(id=self.instance.id).filter(n_serie=n_serie).exists():
+            raise forms.ValidationError('Este Número de Serie ya existe')
+        return n_serie
+
+    def clean_modelo(self):
+        """Validación para campo modelo obligatorio"""
+        modelo = self.cleaned_data.get('modelo')
+        if not modelo:
+            raise forms.ValidationError('Este campo es obligatorio')
+        return modelo
+
+    def clean_activo(self):
+        """
+        Asegura que el valor del campo activo siempre sea 'Switch De Red'
+        incluso si alguien intenta modificarlo
+        """
+        return 'switch de red'
+
+
+
+
+
     class Meta:
         model = AllInOneAdmins
-        fields = ['activo', 'estado', 'marca', 'modelo', 'n_serie', 'unive', 'bdo', 'netbios', 'ubicacion']
+        fields = ['activo', 'estado', 'marca', 'modelo', 'n_serie', 'etiqueta', 'bdo', 'netbios', 'ubicacion']
         widgets = {
             'estado': forms.Select(choices=opciones_estado),
             'marca': forms.TextInput(attrs={
@@ -383,7 +505,7 @@ class NotebooksForm(forms.ModelForm):
     
     class Meta:
         model = Notebook
-        fields = ['activo', 'asignado_a', 'estado', 'marca', 'modelo', 'n_serie', 'unive', 'bdo', 'netbios', 'ubicacion']
+        fields = ['activo', 'asignado_a', 'estado', 'marca', 'modelo', 'n_serie', 'etiqueta', 'bdo', 'netbios', 'ubicacion']
         widgets = {
             'estado': forms.Select(choices=opciones_estado),
             'marca': forms.TextInput(attrs={
@@ -465,7 +587,7 @@ class MiniPCForm(forms.ModelForm):
     
     class Meta:
         model = MiniPC
-        fields = ['activo', 'estado', 'marca', 'modelo', 'n_serie', 'unive', 'bdo', 'ubicacion']
+        fields = ['activo', 'estado', 'marca', 'modelo', 'n_serie', 'etiqueta', 'bdo', 'ubicacion']
         widgets = {
             'estado': forms.TextInput(attrs={
                 'class': 'w-full rounded-md border-gray-300 shadow-sm',
@@ -603,7 +725,7 @@ class BodegaADRForm(forms.ModelForm):
 )
     class Meta:
         model = BodegaADR
-        fields = ['activo', 'ubicacion', 'marca', 'modelo', 'n_serie', 'unive', 'bdo', 'netbios'] # Renombrado estado_activo a ubicacion
+        fields = ['activo', 'ubicacion', 'marca', 'modelo', 'n_serie', 'etiqueta', 'bdo', 'netbios'] # Renombrado estado_activo a ubicacion
         widgets = {
             'ubicacion': forms.TextInput( # Renombrado estado_activo a ubicacion y cambiado a TextInput
                 attrs={
@@ -629,10 +751,10 @@ class BodegaADRForm(forms.ModelForm):
                     'placeholder': 'Número de Serie'
                 }
             ),
-            'unive': forms.TextInput(
+            'etiqueta': forms.TextInput(
                 attrs={
                     'class': 'w-full rounded-md border-gray-300 shadow-sm',
-                    'placeholder': 'UNIVE'
+                    'placeholder': 'ETIQUETA'
                 }
             ),
             'bdo': forms.NumberInput(
@@ -770,7 +892,7 @@ class AzoteaForm(forms.ModelForm):
 
     class Meta:
         model = Azotea
-        fields = ['activo', 'estado', 'ubicacion', 'marca', 'modelo', 'n_serie', 'unive', 'bdo']
+        fields = ['activo', 'estado', 'ubicacion', 'marca', 'modelo', 'n_serie', 'etiqueta', 'bdo']
         widgets = {
             'ubicacion': forms.TextInput(
                 attrs={
@@ -797,10 +919,10 @@ class AzoteaForm(forms.ModelForm):
                     'placeholder': 'Número de Serie'
                 }
             ),
-             'unive': forms.TextInput(
+             'etiqueta': forms.TextInput(
                 attrs={
                     'class': 'w-full rounded-md border-gray-300 shadow-sm',
-                    'placeholder': 'UNIVE'
+                    'placeholder': 'ETIQUETA'
                 }
             ),
              'bdo': forms.NumberInput(
@@ -886,7 +1008,7 @@ class MonitorForm(forms.ModelForm):
     )
     class Meta:
         model = Monitor
-        fields = ['activo', 'estado', 'marca', 'modelo', 'n_serie', 'unive', 'bdo', 'ubicacion', 'asignado_a']
+        fields = ['activo', 'estado', 'marca', 'modelo', 'n_serie', 'etiqueta', 'bdo', 'ubicacion', 'asignado_a']
         widgets = {
             'estado': forms.Select(choices=opciones_estado),
             'marca': forms.TextInput(attrs={
@@ -934,7 +1056,7 @@ class AudioForm(forms.ModelForm):
     )
     class Meta:
         model = Audio
-        fields = ['activo', 'estado', 'marca', 'modelo', 'n_serie', 'unive', 'bdo', 'ubicacion']
+        fields = ['activo', 'estado', 'marca', 'modelo', 'n_serie', 'etiqueta', 'bdo', 'ubicacion']
         widgets = {
             'estado': forms.Select(choices=opciones_estado),
             'marca': forms.TextInput(attrs={
@@ -969,17 +1091,17 @@ class AudioForm(forms.ModelForm):
             raise forms.ValidationError('Este campo es obligatorio')
         return modelo
 
-    def clean_unive(self):
-        unive = self.cleaned_data.get('unive')
+    def clean_etiqueta(self):
+        etiqueta = self.cleaned_data.get('etiqueta')
 
         # Permitir explícitamente valores 0 o "0" sin validar duplicados
-        if str(unive) in ["0", "", None]:
-            return unive
+        if str(etiqueta) in ["0", "", None]:
+            return etiqueta
 
-        if Audio.objects.exclude(id=self.instance.id).filter(unive=unive).exists():
-            raise forms.ValidationError('Este código UNIVE ya existe para un Equipo de Audio.')
+        if Audio.objects.exclude(id=self.instance.id).filter(etiqueta=etiqueta).exists():
+            raise forms.ValidationError('Este código ETIQUETA ya existe para un Equipo de Audio.')
 
-        return unive
+        return etiqueta
 
 
 class TabletForm(forms.ModelForm):
@@ -1003,7 +1125,7 @@ class TabletForm(forms.ModelForm):
 
     class Meta:
         model = Tablet
-        fields = ['activo', 'estado', 'marca', 'modelo', 'n_serie', 'unive', 'bdo', 'netbios', 'ubicacion']
+        fields = ['activo', 'estado', 'marca', 'modelo', 'n_serie', 'etiqueta', 'bdo', 'netbios', 'ubicacion']
         widgets = {
             'estado': forms.Select(choices=opciones_estado),
             'marca': forms.TextInput(attrs={
@@ -1025,11 +1147,11 @@ class TabletForm(forms.ModelForm):
             raise forms.ValidationError('Este campo es obligatorio')
         return modelo
         
-    def clean_unive(self):
-        unive = self.cleaned_data.get('unive')
-        if unive != "0" and Tablet.objects.exclude(id=self.instance.id).filter(unive=unive).exists():
-            raise forms.ValidationError('Este código UNIVE ya existe para una Tablet.')
-        return unive
+    def clean_etiqueta(self):
+        etiqueta = self.cleaned_data.get('etiqueta')
+        if etiqueta != "0" and Tablet.objects.exclude(id=self.instance.id).filter(etiqueta=etiqueta).exists():
+            raise forms.ValidationError('Este código ETIQUETA ya existe para una Tablet.')
+        return etiqueta
     
     def clean_netbios(self):
         netbios = self.cleaned_data.get('netbios')
