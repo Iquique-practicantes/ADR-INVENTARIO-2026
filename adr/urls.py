@@ -28,7 +28,11 @@ from .views import (
     UploadExcelMiniPCView, UploadExcelAllInOneAdmView, UploadExcelBodegaADRView,
     UploadExcelAzoteaView,
     UploadExcelEquiposIslaView, UploadExcelSwitchDeRedView,
-    ConfirmarRestauracionView, EliminadosListView, DeleteToEliminadosView, detalle_activo_busqueda
+    ConfirmarRestauracionView, EliminadosListView, DeleteToEliminadosView, detalle_activo_busqueda,
+    # Vista para borrar contenido de inventario
+    ClearInventoryView,
+    # Vistas para Televisor
+    TelevisorView, Add_Televisor, Edit_Televisor, Delete_Televisor, Detalle_Televisor, UploadExcelTelevisorView,
 )
 
 from . import views
@@ -187,8 +191,19 @@ urlpatterns = [
     
     # Las URLs de detalle para Monitor, Audio y Tablet ya se agregaron arriba con sus respectivos bloques.
     
+    # URL para borrar contenido de inventario
+    path('clear_inventory/<str:model_name>/', login_required(ClearInventoryView.as_view()), name='clear_inventory'),
+    
     # URL para la vista de detalle de activo desde búsqueda global
     path('detalle_activo/<str:model_name>/<int:pk>/', views.detalle_activo_busqueda, name='detalle_activo_busqueda'),
+    
+    # Gestión de Televisores
+    path('televisor/', login_required(TelevisorView.as_view()), name="televisor"),
+    path('add_televisor/', login_required(Add_Televisor.as_view()), name="add_televisor"),
+    path('edit_televisor/<int:pk>/', login_required(Edit_Televisor.as_view()), name="edit_televisor"),
+    path('delete_televisor/<str:model_name>/<int:pk>/', login_required(DeleteToEliminadosView.as_view()), name='delete_televisor'),
+    path('detalle_televisor/<int:pk>/', login_required(Detalle_Televisor.as_view()), name='detalle_televisor'),
+    path('upload_excel_televisor/', login_required(UploadExcelTelevisorView.as_view()), name="upload_excel_televisor"),
 ]
 
 

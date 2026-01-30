@@ -54,7 +54,7 @@ from accounts.models import Profile  # Modelo de perfil de usuario
 from .models import (
     AllInOne, AllInOneAdmins, Notebook, MiniPC,
     Proyectores, BodegaADR, Azotea, Profile, Eliminados, HistorialCambios,
-    Monitor, Audio, Tablet, EquiposIsla as EquiposIslaModel, SwitchDeRed as SwitchDeRedModel, # Nuevos modelos agregados
+    Monitor, Audio, Tablet, EquiposIsla as EquiposIslaModel, SwitchDeRed as SwitchDeRedModel, Televisor,
 )
 
 # Importaciones locales - Formularios
@@ -62,7 +62,7 @@ from .forms import (
     LoginForm, UserCreationForm, ProfileForm, UserForm, RegisterUserForm,
     AllInOneForm, AllInOneAdminsForm, NotebooksForm, MiniPCForm,
     ProyectoresForm, BodegaADRForm, AzoteaForm,
-    UploadExcelForm, MonitorForm, AudioForm, TabletForm, EquiposIslaForm, SwitchDeRedForm,# Nuevos formularios agregados
+    UploadExcelForm, MonitorForm, AudioForm, TabletForm, EquiposIslaForm, SwitchDeRedForm, TelevisorForm,
 )
 from django.forms.models import model_to_dict
 
@@ -954,8 +954,13 @@ class Add_AllInOneView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 
 @add_group_name_to_context
 class Add_EquiposIsla(LoginRequiredMixin, UserPassesTestMixin, CreateView):
-    """Vista para agregar nuevo All In One"""
+    """Vista para agregar nuevo Equipo Isla"""
     model = EquiposIslaModel
+
+    def test_func(self):
+        """Solo usuarios ADR o Operador ADR pueden agregar activos"""
+        return self.request.user.groups.filter(name__in=['ADR', 'Operador ADR']).exists()
+
     template_name = 'modulos/add_equipos_isla.html'
     form_class = EquiposIslaForm
     success_url = reverse_lazy('equipos_isla')    
@@ -1069,8 +1074,13 @@ class Edit_EquiposIsla(LoginRequiredMixin, UpdateView):
 
 @add_group_name_to_context
 class Add_SwitchDeRed(LoginRequiredMixin, UserPassesTestMixin, CreateView):
-    """Vista para agregar nuevo All In One"""
+    """Vista para agregar nuevo Switch de Red"""
     model = SwitchDeRedModel
+
+    def test_func(self):
+        """Solo usuarios ADR o Operador ADR pueden agregar activos"""
+        return self.request.user.groups.filter(name__in=['ADR', 'Operador ADR']).exists()
+
     template_name = 'modulos/add_switch_de_red.html'
     form_class = SwitchDeRedForm
     success_url = reverse_lazy('switch_de_red')    
@@ -1343,15 +1353,15 @@ MODELS_DICT = {
 
 
 @add_group_name_to_context
-class EliminadosListView(LoginRequiredMixin, ListView):
+class EliminadosListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = Eliminados
     template_name = 'modulos/eliminados.html'
     context_object_name = 'eliminados'
     paginate_by = 25  # Número de objetos por página
     
     def test_func(self):
-        """Verifica permisos: solo ADR y Operadores pueden agregar"""
-        return self.request.user.groups.first().name in ['ADR', 'Operadores ADR']
+        """Verifica permisos: solo ADR y Operadores pueden ver eliminados"""
+        return self.request.user.groups.filter(name__in=['ADR', 'Operador ADR', 'Operadores ADR']).exists()
 
     def handle_no_permission(self):
         """Redirección si no tiene permisos"""
@@ -1408,7 +1418,7 @@ class ConfirmarRestauracionView(LoginRequiredMixin, UserPassesTestMixin, DetailV
 
     def test_func(self):
         """Solo ADR y Operadores pueden restaurar registros"""
-        return self.request.user.groups.first().name in ['ADR', 'Operadores ADR']
+        return self.request.user.groups.filter(name__in=['ADR', 'Operador ADR', 'Operadores ADR']).exists()
 
     def post(self, request, *args, **kwargs):
         """Restaurar el registro de Eliminados a su tabla original"""
@@ -1441,6 +1451,8 @@ class ConfirmarRestauracionView(LoginRequiredMixin, UserPassesTestMixin, DetailV
                 datos_restauracion['netbios'] = registro.netbios
             if 'ubicacion' in campos_validos:
                 datos_restauracion['ubicacion'] = registro.ubicacion
+            if 'asignado_a' in campos_validos:
+                datos_restauracion['asignado_a'] = 'No Asignado'
 
             # Crear una nueva instancia del modelo con los datos restaurados
             restored_instance = model.objects.create(**datos_restauracion)
@@ -1493,7 +1505,7 @@ class DeleteToEliminadosView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
         """Solo ADR y Operadores puede eliminar"""
         user = self.request.user
-        has_perm = user.groups.filter(name__in=['ADR', 'Operadores ADR']).exists()
+        has_perm = user.groups.filter(name__in=['ADR', 'Operador ADR', 'Operadores ADR']).exists()
         print(f"DEBUG: DeleteToEliminadosView.test_func - User: {user.username}, Groups: {[g.name for g in user.groups.all()]}, Has Perm: {has_perm}")
         return has_perm
 
@@ -1501,6 +1513,10 @@ class DeleteToEliminadosView(LoginRequiredMixin, UserPassesTestMixin, View):
         print("DEBUG: DeleteToEliminadosView.handle_no_permission - Access Denied")
         messages.error(self.request, "No tienes permisos para realizar esta acción.")
         return redirect('inicio')  # Redirect to a safe page like home/inicio instead of potentially missing 'error'
+
+    def get(self, request, *args, **kwargs):
+        """Permitir eliminación vía GET para enlaces directos"""
+        return self.post(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         """Procesa la eliminación lógica moviendo el registro a la tabla de Eliminados"""
@@ -1588,11 +1604,29 @@ class DeleteToEliminadosView(LoginRequiredMixin, UserPassesTestMixin, View):
                     print("DEBUG: Intentando enviar correo de notificación de eliminación.") # Debug print
                     try:
                         print("DEBUG: Llamando a enviar_notificacion_asunto.") # Debug print
-                        enviar_notificacion_asunto(
-                            asunto=f"Registro Movido a Eliminados - {modelo}",
-                            mensaje=mensaje,
-                            destinatarios=settings.EMAIL_RECIPIENTS
+                        # Configurar conexión SMTP explícita para asegurar envío
+                        from django.core.mail import get_connection
+                        from decouple import config
+                        
+                        connection = get_connection(
+                            backend='django.core.mail.backends.smtp.EmailBackend',
+                            host='smtp.gmail.com',
+                            port=587,
+                            username=config('EMAIL_HOST_USER'),
+                            password=config('EMAIL_HOST_PASSWORD'),
+                            use_tls=True
                         )
+                        
+                        print("DEBUG: Enviando correo con conexión explícita.")
+                        send_mail(
+                            subject=f"Registro Movido a Eliminados - {modelo}",
+                            message=mensaje,
+                            from_email=config('EMAIL_HOST_USER'),
+                            recipient_list=settings.EMAIL_RECIPIENTS,
+                            connection=connection,
+                            fail_silently=False
+                        )
+                        print("DEBUG: Correo enviado exitosamente.")
                         print("DEBUG: Llamada a enviar_notificacion_asunto completada.") # Debug print
                         messages.success(request, f'{model_name.title()} movido correctamente a la tabla de Eliminados y correo enviado.')
                     except Exception as e:
@@ -5371,7 +5405,7 @@ def buscar_global(request):
     print(f"[DEBUG] buscar_global: query_original (lowercase) = '{query_original}'") # DEBUG
     
     query_sin_prefijo_scanner = query_original
-    if re.match(r"^[a-z]{3}", query_original): # ej., "ser123" -> "123"
+    if re.match(r"^[a-z]{3}\d", query_original): # Solo si son 3 letras seguidas de un dígito (ej. ser123)
          query_sin_prefijo_scanner = query_original[3:]
 
     # Mapeo de modelos a sus nombres plurales y nombres de URL para detalles
@@ -6069,3 +6103,209 @@ def upload_excel_equipos_isla(request):
     return render(request, "upload_excel_equipos_isla.html")
 
 # Add email notification method if needed, similar to other upload views
+
+@add_group_name_to_context
+class ClearInventoryView(LoginRequiredMixin, UserPassesTestMixin, View):
+    """Vista para eliminar todos los registros de un modelo específico (Borrar Todo)"""
+
+    def test_func(self):
+        """Solo ADR y Operadores pueden borrar todo"""
+        return self.request.user.groups.filter(name__in=['ADR', 'Operador ADR', 'Operadores ADR']).exists()
+
+    def handle_no_permission(self):
+        messages.error(self.request, "No tienes permisos para realizar esta acción.")
+        return redirect('inicio')
+
+    def post(self, request, *args, **kwargs):
+        model_name = kwargs.get('model_name')
+        
+        if not model_name:
+            messages.error(request, 'Nombre de modelo no especificado.')
+            return redirect('inicio')
+
+        # Normalizar nombre del modelo
+        model_key = model_name.lower()
+        
+        # Diccionario de URLs de redirección
+        REDIRECT_URLS = {
+            'allinone': 'all_in_one',
+            'allinoneadmin': 'all_in_one_adm',
+            'notebook': 'notebooks',
+            'minipc': 'mini_pc',
+            'proyector': 'proyectores',
+            'bodegaadr': 'bodega_adr',
+            'azotea': 'azotea_adr',
+            'monitor': 'monitor_list',
+            'audio': 'audio_list',
+            'tablet': 'tablet_list',
+            'equiposisla': 'equipos_isla',
+            'switchdered': 'switch_de_red',
+        }
+        
+        # Mapas adicionales para casos especiales de nombres
+        if model_key == 'notebook': model_key = 'notebook' 
+        # (MODELS_DICT usa claves específicas, asegurarnos de coincidir)
+        
+        model = MODELS_DICT.get(model_key)
+        redirect_url = REDIRECT_URLS.get(model_key, 'inicio')
+
+        if not model:
+            messages.error(request, f'Modelo no válido o no encontrado: {model_name}')
+            return redirect(redirect_url)
+
+        try:
+            # Borrar todos los registros
+            count, _ = model.objects.all().delete()
+            
+            # Mensaje de éxito
+            model_verbose = model._meta.verbose_name_plural.title()
+            messages.success(request, f'Se han eliminado correctamente todos los registros de {model_verbose} ({count} registros).')
+            
+            # Registrar acción en log/consola si es necesario
+            print(f"User {request.user} cleared all records for {model_name}. Deleted: {count}")
+
+        except Exception as e:
+            messages.error(request, f'Error al eliminar registros: {str(e)}')
+            
+        return redirect(redirect_url)
+
+
+# ================== VISTAS DE TELEVISOR ==================
+
+class TelevisorView(LoginRequiredMixin, ListView):
+    """Vista para listar Televisores"""
+    model = Televisor
+    template_name = 'modulos/televisor.html'
+    context_object_name = 'televisores'
+    paginate_by = 25
+    ordering = ['ubicacion', '-fecha_creacion']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        search_query = self.request.GET.get('search', '').strip()
+        search_by_pk = self.request.GET.get('search_by_pk', 'false').lower() == 'true'
+
+        if search_by_pk:
+            if search_query.isdigit():
+                return queryset.filter(pk=int(search_query))
+            else:
+                return queryset.none()
+
+        if search_query:
+            queryset = queryset.filter(
+                Q(ubicacion__icontains=search_query) |
+                Q(activo__icontains=search_query) |
+                Q(marca__icontains=search_query) |
+                Q(modelo__icontains=search_query) |
+                Q(n_serie__icontains=search_query) |
+                Q(etiqueta__icontains=search_query) |
+                Q(bdo__icontains=search_query) |
+                Q(creado_por__first_name__icontains=search_query) |
+                Q(creado_por__last_name__icontains=search_query)
+            )
+
+        return queryset.select_related('creado_por').order_by('ubicacion', '-fecha_creacion')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['search_query'] = self.request.GET.get('search', '').strip()
+        return context
+
+
+class Add_Televisor(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    """Vista para agregar nuevo Televisor"""
+    model = Televisor
+    template_name = 'modulos/add_televisor.html'
+    form_class = TelevisorForm
+    success_url = reverse_lazy('televisor')
+
+    def test_func(self):
+        return self.request.user.groups.filter(name__in=['ADR', 'Operador ADR']).exists()
+
+    def form_valid(self, form):
+        form.instance.creado_por = self.request.user
+        messages.success(self.request, 'Televisor agregado correctamente.')
+        return super().form_valid(form)
+
+
+class Detalle_Televisor(LoginRequiredMixin, DetailView):
+    model = Televisor
+    template_name = "modulos/detalle_televisor.html"
+    context_object_name = "televisor"
+
+
+class Edit_Televisor(LoginRequiredMixin, UpdateView):
+    model = Televisor
+    form_class = TelevisorForm
+    template_name = "modulos/edit_televisor.html"
+    success_url = reverse_lazy("televisor")
+
+    def test_func(self):
+        return self.request.user.groups.first().name in ['ADR', 'Operadores ADR', 'Auxiliares Operadores ADR']
+
+    def handle_no_permission(self):
+        return redirect('error')
+
+
+class Delete_Televisor(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Televisor
+    template_name = "modulos/delete_televisor.html"
+    success_url = reverse_lazy("televisor")
+
+    def test_func(self):
+        return self.request.user.groups.filter(name__in=['ADR', 'Operador ADR']).exists()
+
+
+class UploadExcelTelevisorView(LoginRequiredMixin, UserPassesTestMixin, FormView):
+    """Vista para subir archivo Excel de Televisores"""
+    template_name = 'upload_excel_televisor.html'
+    form_class = UploadExcelForm
+    success_url = reverse_lazy('televisor')
+
+    def test_func(self):
+        return self.request.user.groups.filter(name__in=['ADR', 'Operador ADR']).exists()
+
+    def form_valid(self, form):
+        excel_file = form.cleaned_data['excel_file']
+        try:
+            df = pd.read_excel(excel_file, engine='openpyxl')
+            
+            # Mapeo de columnas
+            column_mapping = {
+                'Activo': 'activo',
+                'Modelo': 'modelo',
+                'N_serie': 'n_serie',
+                'Etiqueta': 'etiqueta',
+                'Bdo': 'bdo',
+                'Estado': 'estado',
+                'Marca': 'marca',
+                'Ubicacion': 'ubicacion',
+            }
+            
+            df.rename(columns=column_mapping, inplace=True)
+            
+            created_count = 0
+            for _, row in df.iterrows():
+                try:
+                    Televisor.objects.create(
+                        activo=row.get('activo', 'Televisor'),
+                        modelo=row.get('modelo', ''),
+                        n_serie=row.get('n_serie', ''),
+                        etiqueta=row.get('etiqueta', 0),
+                        bdo=row.get('bdo', 0),
+                        estado=row.get('estado', 'Operativo'),
+                        marca=row.get('marca', ''),
+                        ubicacion=row.get('ubicacion', ''),
+                        creado_por=self.request.user,
+                    )
+                    created_count += 1
+                except Exception as e:
+                    print(f"Error creando registro: {e}")
+                    continue
+            
+            messages.success(self.request, f'Se importaron {created_count} televisores correctamente.')
+            
+        except Exception as e:
+            messages.error(self.request, f'Error al procesar el archivo: {str(e)}')
+        
+        return super().form_valid(form)

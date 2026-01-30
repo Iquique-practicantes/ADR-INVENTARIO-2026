@@ -9,7 +9,7 @@ from accounts.models import Profile
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import (
     AllInOne, AllInOneAdmins, Notebook, MiniPC,
-    Proyectores, BodegaADR, Azotea, Monitor, Audio, Tablet, EquiposIsla, SwitchDeRed # Nuevos modelos
+    Proyectores, BodegaADR, Azotea, Monitor, Audio, Tablet, EquiposIsla, SwitchDeRed, Televisor
 )
 from accounts.models import Profile
 from .opciones import (
@@ -1168,6 +1168,64 @@ class TabletForm(forms.ModelForm):
 
     def clean_activo(self):
         return 'Tablet'
+
+
+class TelevisorForm(forms.ModelForm):
+    """Formulario para Televisores"""
+    activo = forms.CharField(
+        initial='Televisor',
+        max_length=150,
+        required=True,
+        widget=forms.TextInput(
+            attrs={
+                'readonly': 'readonly',
+                'class': 'w-full rounded-md border-gray-300 shadow-sm bg-gray-100 cursor-not-allowed'
+            }
+        )
+    )
+
+    class Meta:
+        model = Televisor
+        fields = ['activo', 'marca', 'modelo', 'n_serie', 'etiqueta', 'bdo', 'estado', 'ubicacion']
+        widgets = {
+            'estado': forms.Select(choices=opciones_estado),
+            'marca': forms.TextInput(attrs={
+                'class': 'w-full rounded-md shadow-sm border-gray-300',
+                'list': 'marcas_list',
+                'placeholder': 'Seleccione o escriba una marca'
+            }),
+            'ubicacion': forms.TextInput(attrs={
+                'class': 'w-full rounded-md border-gray-300 shadow-sm',
+                'placeholder': 'Ingrese la ubicación'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            self.initial['marca'] = self.instance.marca
+
+    def clean_marca(self):
+        marca = self.cleaned_data.get('marca')
+        if not marca:
+            raise forms.ValidationError('Este campo es obligatorio.')
+        return marca.strip()
+
+    def clean_n_serie(self):
+        n_serie = self.cleaned_data.get('n_serie')
+        if Televisor.objects.exclude(id=self.instance.id).filter(n_serie=n_serie).exists():
+            raise forms.ValidationError('Este Número de Serie ya existe')
+        return n_serie
+
+    def clean_modelo(self):
+        modelo = self.cleaned_data.get('modelo')
+        if not modelo:
+            raise forms.ValidationError('Este campo es obligatorio')
+        return modelo
+
+    def clean_activo(self):
+        return 'Televisor'
+
 
 #FORM PARA SUBIR ARCHIVOS EXCEL
 

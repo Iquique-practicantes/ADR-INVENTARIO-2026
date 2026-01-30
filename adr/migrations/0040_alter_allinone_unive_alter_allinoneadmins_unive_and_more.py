@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('adr', '0039_remove_allinone_etiqueta_and_more'),
+        ('adr', '0038_alter_eliminados_activo_alter_eliminados_estado_and_more'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 

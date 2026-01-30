@@ -4,38 +4,38 @@
 {% block title %} Inicio {% endblock %}
 
 {% block content %}
-        
+
 <style>
     .cardTitle {
-    min-height: 2.4em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
+        min-height: 2.4em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        font-size: clamp(16px, 1.9vw, 20px);
     }
 
-    /* Ajuste solo para títulos largos que quieres en una sola línea */
-    .cardTitle--tight{
-    white-space: nowrap;                 /* fuerza 1 línea */
-    font-size: clamp(16px, 1.9vw, 20px); /* reduce un poco para que quepa */
-    line-height: 1.1;
+    /* Ajuste solo para títulos largos que quieres en una sola línea - DEPRECADO, usa estilo base */
+    .cardTitle--tight {
+        white-space: nowrap;
+        line-height: 1.1;
     }
-    
 </style>
 
 <div class="homeContainer">
     <div class="homeContent">
         <!-- Contenedor del buscador -->
-        <div class="buscadorContainer"
-             style="margin: 20px auto;
+        <div class="buscadorContainer" style="margin: 20px auto;
                     width: fit-content;
                     text-align: center;
                     border-radius: 10px;
                     overflow: hidden;
                     background: #f5f5f5;">
-            <form method="get" action="{% url 'buscar_global' %}" style="display: inline-flex; gap: 10px;">
-                <input type="text" id="search" name="search" placeholder="Escanea o escribe código/nombre" style="padding: 10px; width: 300px;">
-                <button type="submit" style="padding: 10px 20px; border-radius: 10px; border: none; background-color: #9e0909; color: #fff;">Buscar</button>
+            <form onsubmit="submitSearch(event)" method="get" action="{% url 'buscar_global' %}" style="display: inline-flex; gap: 10px;">
+                <input type="text" id="search" name="search" placeholder="Escanea o escribe código/nombre"
+                    style="padding: 10px; width: 300px;">
+                <button type="submit"
+                    style="padding: 10px 20px; border-radius: 10px; border: none; background-color: #9e0909; color: #fff;">Buscar</button>
             </form>
         </div>
 
@@ -60,10 +60,15 @@
                 <img class="cardImage" src="{% static 'imagenes_normalizadas/proyector.png' %}" alt="proyector">
                 <h2 class="cardTitle">Proyectores</h2>
             </a>
-            
+
             <a href="{% url 'monitor_list' %}" class="card">
                 <img class="cardImage" src="{% static 'imagenes_normalizadas/monitor.png' %}" alt="monitor">
                 <h2 class="cardTitle">Monitores</h2>
+            </a>
+
+            <a href="{% url 'televisor' %}" class="card">
+                <img class="cardImage" src="{% static 'imagenes/TV.png' %}" alt="televisor">
+                <h2 class="cardTitle">Televisores</h2>
             </a>
 
             <a href="{% url 'audio_list' %}" class="card">
@@ -77,12 +82,12 @@
             </a>
 
             <a href="{% url 'bodega_adr' %}" class="card">
-                <img class="cardImage" src="{% static 'imagenes_normalizadas/inacap_logo.png' %}" alt="bodega_adr">
-                <h2 class="cardTitle cardTitle--tight">Bodega ADR</h2>
+                <img class="cardImage" src="{% static 'imagenes/ADR LOGO.png' %}" alt="bodega_adr">
+                <h2 class="cardTitle">Bodega ADR</h2>
             </a>
 
             <a href="{% url 'azotea_adr' %}" class="card">
-                <img class="cardImage" src="{% static 'imagenes_normalizadas/adr_icon.png' %}" alt="azotea_adr">
+                <img class="cardImage" src="{% static 'imagenes/Azotea.png' %}" alt="azotea_adr">
                 <h2 class="cardTitle">Azotea</h2>
             </a>
 
@@ -90,12 +95,13 @@
                 <img class="cardImage" src="{% static 'imagenes_normalizadas/equipo_isla.png' %}" alt="equipos_isla">
                 <h2 class="cardTitle">Equipos Islas</h2>
             </a>
-            
+
             <a href="{% url 'switch_de_red' %}" class="card">
-                <img class="cardImage" src="{% static 'imagenes_normalizadas/241494-19148364.png' %}" alt="switch_de_red">
+                <img class="cardImage" src="{% static 'imagenes_normalizadas/241494-19148364.png' %}"
+                    alt="switch_de_red">
                 <h2 class="cardTitle">Switch de red</h2>
             </a>
-            
+
         </div>
     </div>
 </div>

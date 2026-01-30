@@ -1,0 +1,50 @@
+{# Componente de paginacion reutilizable #}
+{% if page_obj.paginator.num_pages > 1 %}
+<nav class="flex items-center justify-center gap-3 mt-6 pb-6" aria-label="Navegacion de paginas">
+    <div class="text-sm text-gray-700">
+        Pagina <span class="font-semibold">{{ page_obj.number }}</span> de <span class="font-semibold">{{ page_obj.paginator.num_pages }}</span>
+    </div>
+
+    <div class="flex items-center gap-2">
+        <label for="page-selector" class="text-sm text-gray-700">Pagina:</label>
+        <select id="page-selector" class="border border-gray-300 rounded px-2 py-1 text-sm"
+            onchange="goToPage(this.value)">
+            {% for num in page_obj.paginator.page_range %}
+            <option value="{{ num }}" {% if page_obj.number == num %}selected{% endif %}>{{ num }}</option>
+            {% endfor %}
+        </select>
+
+        <button onclick="goToPage(document.getElementById('page-selector').value)"
+            class="px-4 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm font-medium">
+            Ir
+        </button>
+
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}"
+            class="px-4 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm font-medium">
+            Siguiente
+        </a>
+        {% else %}
+        <button disabled class="px-4 py-1 bg-gray-300 text-gray-500 rounded cursor-not-allowed text-sm font-medium">
+            Siguiente
+        </button>
+        {% endif %}
+
+        <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}"
+            class="px-4 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm font-medium">
+            Ultimo
+        </a>
+    </div>
+</nav>
+
+<script>
+    function goToPage(pageNum) {
+        const searchQuery = '{{ search_query|escapejs }}';
+        let url = '?page=' + pageNum;
+        if (searchQuery) {
+            url += '&search=' + encodeURIComponent(searchQuery);
+        }
+        window.location.href = url;
+    }
+</script>
+{% endif %}

@@ -288,3 +288,17 @@ class HistorialCambios(models.Model):
         verbose_name_plural = 'Historial de Cambios'
         ordering = ['-fecha_modificacion']
 
+
+class Televisor(ActivoBase):
+    """Modelo para Televisores"""
+    marca = models.CharField(max_length=100, default='', verbose_name='Marca')
+    ubicacion = models.CharField(max_length=100, default='Seleccione', verbose_name='Ubicación')
+
+    class Meta:
+        verbose_name = 'Televisor'
+        verbose_name_plural = 'Televisores'
+        ordering = ['ubicacion', '-fecha_creacion']
+        indexes = [models.Index(fields=['creado_por'], name='idx_televisor_creado_por'),]
+
+    def get_absolute_url(self):
+        return reverse('detalle_televisor', kwargs={'pk': self.pk})

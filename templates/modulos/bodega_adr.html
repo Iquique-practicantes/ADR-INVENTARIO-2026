@@ -54,7 +54,12 @@
 
       {# Derecha: botones verdes alineados (misma altura h-10) #}
       {% if bodegas_adr or page_obj %}
-      <div class="flex gap-3 md:ml-6 shrink-0">
+      <div class="flex gap-3 md:ml-6 shrink-0">        {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' %}
+        <a href="{% url 'add_bodega_adr' %}" class="inline-flex items-center justify-center px-4 h-10 rounded bg-gradient-to-br from-red-600 to-red-900 hover:from-red-500 hover:to-red-700 text-white shadow-sm">
+          <i class="fas fa-plus"></i> Agregar Activo
+        </a>
+        {% endif %}
+
         <a href="{% url 'descargar_excel' 'bodegaadr' %}"
            class="inline-flex items-center justify-center px-4 h-10 rounded bg-gradient-to-br from-green-600 to-green-900 hover:from-green-500 hover:to-green-700 text-white shadow-sm">
           Descargar Excel
@@ -63,6 +68,15 @@
            class="inline-flex items-center justify-center px-4 h-10 rounded bg-gradient-to-br from-green-600 to-green-900 hover:from-green-500 hover:to-green-700 text-white shadow-sm">
           Subir Excel
         </a>
+        {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' %}
+        <form id="clearFormBodega" method="POST" action="{% url 'clear_inventory' 'bodegaadr' %}" style="display: inline;">
+          {% csrf_token %}
+          <button type="button" onclick="confirmClearBodega()" 
+                  class="w-full sm:w-auto text-center bg-gradient-to-br from-red-600 to-red-900 hover:from-red-500 hover:to-red-700 text-white px-4 h-10 leading-10 rounded shadow-sm">
+            <i class="fas fa-trash-alt"></i> Borrar Todo
+          </button>
+        </form>
+        {% endif %}
       </div>
       {% endif %}
 
@@ -145,6 +159,7 @@
       <table class="min-w-[1100px] w-full table-auto bg-white">
         <thead class="bg-red-600 text-white text-sm sticky top-0 z-0">
           <tr>
+            <th class="px-2 py-3 text-center w-12">#</th>
             <th class="px-2 py-3 text-center">Activo</th>
             <th class="px-2 py-3 text-center">Estado</th>
             <th class="px-2 py-3 text-center">Marca</th>
@@ -163,6 +178,7 @@
         <tbody class="divide-y divide-gray-200 text-sm">
           {% for b in items %}
           <tr class="hover:bg-gray-50 align-top">
+            <td class="px-1 py-1 text-center text-gray-600 font-mono text-xs">{{ forloop.counter0|add:page_obj.start_index }}</td>
             <td class="px-1 py-1 text-center break-words">{{ b.activo|capfirst }}</td>
             <td class="px-1 py-1 text-center">
               {% if b.estado == 'Operativo' %}
@@ -224,7 +240,7 @@
             </td>
           </tr>
           {% empty %}
-          <tr><td colspan="13" class="py-4 text-center text-gray-500">No hay registros en Bodega ADR.</td></tr>
+          <tr><td colspan="14" class="py-4 text-center text-gray-500">No hay registros en Bodega ADR.</td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -235,5 +251,15 @@
   {% include 'componentes/pagination.html' with add_url='add_bodega_adr' nombre_activo='Activo' %}
   {% endif %}
   {% endwith %}
+
+  {# Controles de Paginación #}
+  {% include "partials/pagination.html" %}
 </div>
+<script>
+function confirmClearBodega() {
+    if (confirm('¿Estás seguro de que deseas eliminar TODOS los registros de Bodega ADR? Esta acción no se puede deshacer.')) {
+        document.getElementById('clearFormBodega').submit();
+    }
+}
+</script>
 {% endblock content %}

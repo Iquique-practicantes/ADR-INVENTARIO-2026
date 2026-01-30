@@ -1,14 +1,12 @@
 {% if user.is_authenticated %}
 {% with g=group_name_singular|default:"Usuario"|lower %}
 <div id="sidebar" class="fixed flex flex-col top-12 left-[-300px] w-64 h-full text-white transition-all duration-300 border-none z-[90] sidebar
-         {% if g == "usuario" %} bg-zinc-950 role-usuario 
-         {% elif g == "adr" %} bg-gradient-to-tr from-amber-600 to-amber-900 role-adr 
-         {% elif g == "operador adr" %} bg-gradient-to-tr from-red-600 to-red-900 role-operador 
-         {% elif g == "auxiliar operador adr" %} bg-gradient-to-tr from-red-500 to-fuchsia-900 role-auxiliar 
-         {% elif g == "alumno en práctica" or g == "alumno en practica" or g == "alumnos en práctica" or g == "alumnos en practica" %}
-         bg-gradient-to-tr from-gray-500 to-gray-900 role-alumno 
-         {% else %} bg-gradient-to-tr from-red-700 to-red-900 role-default 
-         {% endif %}">
+         {% if g == " usuario" %} bg-zinc-950 role-usuario {% elif g=="adr" %} bg-gradient-to-tr from-amber-600
+  to-amber-900 role-adr {% elif g=="operador adr" %} bg-gradient-to-tr from-red-600 to-red-900 role-operador {% elif
+  g=="auxiliar operador adr" %} bg-gradient-to-tr from-red-500 to-fuchsia-900 role-auxiliar {% elif
+  g=="alumno en práctica" or g=="alumno en practica" or g=="alumnos en práctica" or g=="alumnos en practica" %}
+  bg-gradient-to-tr from-gray-500 to-gray-900 role-alumno {% else %} bg-gradient-to-tr from-red-700 to-red-900
+  role-default {% endif %}">
 
   <div class="overflow-y-auto overflow-x-hidden flex flex-col justify-between flex-grow">
     <ul class="flex flex-col py-4 space-y-1">
@@ -101,7 +99,7 @@
             </a>
           </li>
 
-           <li>
+          <li>
             <a href="{% url 'switch_de_red' %}" class="nav-item flex items-center p-2 rounded-md border-l-4 border-transparent
                           {% if current == 'switch_de_red' %}active{% endif %}">
               <i data-lucide="network" class="w-4 h-4 mr-2"></i>

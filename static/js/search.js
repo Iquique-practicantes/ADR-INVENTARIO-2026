@@ -74,54 +74,37 @@ function displayFeedbackMessage(message, isError = false) {
 // Esta función se ejecuta solo en el HOME
 // Redirige la búsqueda a /buscar-global/ para que Django encuentre en todos los modelos
 // Función principal de búsqueda manual
+// Función principal de búsqueda manual - Redirección directa y robusta
 function submitSearch(event) {
     event.preventDefault();
 
     const searchInput = document.getElementById("search");
-    let searchValue = searchInput.value.trim().toLowerCase(); // Convertir a minúsculas para búsqueda insensible a mayúsculas/minúsculas
+    let searchValue = searchInput.value.trim().toLowerCase();
     if (!searchValue) return;
 
     // Mostrar el primer mensaje de feedback
     showFeedback(`Buscando: ${searchValue}`);
 
-    // Detectar si estamos en home
-    const isHome = window.location.pathname === "/" || window.location.pathname === "/home/";
+    // Construir la URL de búsqueda global
+    let searchUrl = `/buscar-global/?search=${encodeURIComponent(searchValue)}`;
 
-    // Crear un nuevo formulario temporal
-    const tempForm = document.createElement("form");
-    tempForm.method = "GET";
-    tempForm.action = isHome ? "/buscar-global/" : window.location.pathname;
-
-    // Agrega el campo de búsqueda
-    const hiddenInput = document.createElement("input");
-    hiddenInput.type = "hidden";
-    hiddenInput.name = "search";
-    hiddenInput.value = searchValue;
-    tempForm.appendChild(hiddenInput);
-
-    // Si hay filtro de ubicación visible en la página, también lo envía
+    // Si hay filtro de ubicación, agregarlo
     const filterUbicacion = document.getElementById("filter_ubicacion");
-    if (filterUbicacion) {
-        const ubicacionInput = document.createElement("input");
-        ubicacionInput.type = "hidden";
-        ubicacionInput.name = "filter_ubicacion";
-        ubicacionInput.value = filterUbicacion.value;
-        tempForm.appendChild(ubicacionInput);
+    if (filterUbicacion && filterUbicacion.value) {
+        searchUrl += `&filter_ubicacion=${encodeURIComponent(filterUbicacion.value)}`;
     }
 
     // Almacenar el valor de búsqueda para verificar después
     localStorage.setItem("lastSearchValue", searchValue);
 
-    // Pequeño retraso antes de enviar el formulario para que el mensaje sea visible
+    // Navegar directamente a la URL después de un breve retraso para mostrar el feedback
     setTimeout(() => {
         // Limpiar el input
         searchInput.value = "";
 
-        // Enviar el formulario
-        document.body.appendChild(tempForm);
-        tempForm.submit();
-        document.body.removeChild(tempForm);
-    }, 2000); // Espera 2 segundos antes de recargar
+        // Navegación directa
+        window.location.href = searchUrl;
+    }, 500); // Reducir tiempo de espera a 500ms
 }
 
 // Esta función se ejecuta en páginas como /notebooks/, /mini_pc/, etc.
@@ -196,20 +179,21 @@ document.addEventListener("DOMContentLoaded", function () {
                     // Convertir a minúsculas para una búsqueda insensible a capitalización
                     scanBuffer = scanBuffer.toLowerCase();
 
-                    // Eliminar letras al inicio del código (si existen 3 letras), solo para la búsqueda con escáner
-                    if (/^[A-Za-z]{3}/.test(scanBuffer)) {
+                    // Eliminar letras al inicio del código (si existen 3 letras seguidas de un dígito), solo para la búsqueda con escáner
+                    if (/^[A-Za-z]{3}\d/.test(scanBuffer)) {
                         scanBuffer = scanBuffer.replace(/^[A-Za-z]{3}/, '');
                     }
 
                     // Actualizar el valor del input con el código limpio
                     searchInput.value = scanBuffer;
-                    
-                    if (window.location.pathname === "/" || window.location.pathname === "/home/") {
-                        submitSearch(new Event("submit"));
-                    } else {
-                        submitLocalSearch(new Event("submit"));
-                    }
+
+                    // Siempre usar búsqueda global con escáner
+                    submitSearch(new Event("submit"));
+
                     scanBuffer = "";
+                } else if (searchInput.value.trim() !== "") {
+                    // Permitir búsqueda manual con ENTER - SIEMPRE GLOBAL
+                    submitSearch(new Event("submit"));
                 }
                 return;
             }
@@ -282,7 +266,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Función para redirigir con los parámetros seleccionados
     function updateFilters() {
         const params = new URLSearchParams(window.location.search);
-        
+
         if (usuarioSelect && usuarioSelect.value) {
             params.set("usuario", usuarioSelect.value);
         } else {
@@ -293,7 +277,7 @@ document.addEventListener("DOMContentLoaded", function () {
             params.set("fecha_inicio", fechaInicioInput.value);
         } else {
             params.delete("fecha_inicio");
-            
+
         }
 
         if (fechaFinInput && fechaFinInput.value) {
@@ -306,7 +290,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const newUrl = `${window.location.pathname}?${params.toString()}`;
         history.replaceState(null, "", newUrl);
     }
-    
+
     // solo agregar event listeners si los elementos existen
     if (usuarioSelect) usuarioSelect.addEventListener("change", updateFilters);
     if (fechaInicioInput) fechaInicioInput.addEventListener("input", updateFilters);

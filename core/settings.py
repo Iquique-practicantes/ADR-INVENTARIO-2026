@@ -205,12 +205,12 @@ else:
 
 
 EMAIL_RECIPIENTS = [
-    # 'afernandezz@inacap.cl', 'algonzalezv@inacap.cl',
-    # 'enavarrom@inacap.cl', 'farnaldi@inacap.cl',
-    #'mvergarao@inacap.cl',
-    'pcasanga@inacap.cl','farnaldi@inacap.cl',
-    'kramosv@inacap.cl','kassramosveg@gmail.com',
-    'smaureira@inacap.cl',
+    'wtapia@inacap.cl',
+    'hleris@inacap.cl',
+    'mvergarao@inacap.cl',
+    'jhonorato@inacap.cl',
+    'enavarrom@inacap.cl',
+    'algonzalezv@inacap.cl',
 ]
 # Parámetros de seguridad para el login
 LOGIN_FAILED_THRESHOLD = 3         # intentos fallidos para alertar

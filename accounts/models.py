@@ -31,8 +31,7 @@ class Profile(models.Model):
 
     def __str__(self):
         return f"Perfil de {self.user.username}"
-        # SIN default aquí: que pueda quedar vacío
-    image = models.ImageField(upload_to='profiles/', null=True, blank=True)
+
 
     def clear_image(self, save=True):
         """Elimina el archivo (si existe) y deja el campo vacío (None), igual que el admin."""

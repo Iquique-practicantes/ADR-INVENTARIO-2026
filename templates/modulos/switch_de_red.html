@@ -54,8 +54,14 @@
         </div>
       </form>
 
-      {# BOTONES: DESCARGAR / SUBIR EXCEL #}
+      {# BOTONES: AGREGAR / DESCARGAR / SUBIR EXCEL / BORRAR TODO #}
       <div class="flex gap-3 md:ml-6 shrink-0">
+        {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' %}
+        <a href="{% url 'add_switch_de_red' %}"
+          class="inline-flex items-center justify-center px-4 h-10 rounded bg-gradient-to-br from-red-600 to-red-900 hover:from-red-500 hover:to-red-700 text-white shadow-sm">
+          <i class="fas fa-plus"></i> Agregar Activo
+        </a>
+        {% endif %}
         <a href="{% url 'descargar_excel' 'switchdered' %}" class="inline-flex items-center justify-center px-4 h-10 rounded
                   bg-gradient-to-br from-green-600 to-green-900
                   hover:from-green-500 hover:to-green-700 text-white shadow-sm">
@@ -66,6 +72,16 @@
                   hover:from-green-500 hover:to-green-700 text-white shadow-sm">
           Subir Excel
         </a>
+        {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' %}
+        <form id="clearFormSwitchDeRed" method="POST" action="{% url 'clear_inventory' 'switchdered' %}"
+          style="display: inline;">
+          {% csrf_token %}
+          <button type="button" onclick="confirmClearSwitchDeRed()"
+            class="w-full sm:w-auto text-center bg-gradient-to-br from-red-600 to-red-900 hover:from-red-500 hover:to-red-700 text-white px-4 h-10 leading-10 rounded shadow-sm">
+            <i class="fas fa-trash-alt"></i> Borrar Todo
+          </button>
+        </form>
+        {% endif %}
       </div>
 
     </div>
@@ -112,7 +128,7 @@
         <div class="col-span-2">
           <dt class="text-gray-500">Registrado por</dt>
           <dd class="text-gray-800">
-            {% if switch_de_red %}
+            {% if a.creado_por %}
             {{ a.creado_por.get_full_name|default:a.creado_por.username }}
             {% else %}
             Admin
@@ -122,6 +138,42 @@
         <div class="col-span-2">
           <dt class="text-gray-500">Fecha</dt>
           <dd class="text-gray-800">{{ a.fecha_creacion|date:"d/m/Y" }}</dd>
+        </div>
+        
+        <div class="col-span-2 flex justify-end gap-2 mt-2">
+          {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' or group_name_singular == 'Auxiliares Operador ADR' %}
+          <!-- View -->
+          <a href="{% url 'detalle_SwitchDeRed' a.pk %}"
+             class="inline-flex items-center justify-center w-8 h-8 rounded-full text-white bg-gradient-to-br from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 shadow-md"
+             title="Ver">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 12s4.5-7 10-7 10 7 10 7-4.5 7-10 7-10-7-10-7z" />
+                 <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+          </a>
+          <!-- Edit -->
+          <a href="{% url 'edit_switch_de_red' a.pk %}"
+             class="inline-flex items-center justify-center w-8 h-8 rounded-full text-white bg-gradient-to-br from-amber-500 to-amber-700 hover:from-amber-600 hover:to-amber-800 shadow-md"
+             title="Editar">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536L9 18H5.5V14.5z" />
+              </svg>
+          </a>
+          {% endif %}
+          {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' %}
+          <!-- Delete -->
+          <form action="{% url 'delete_switch_de_red' 'switch_de_red' a.pk %}" method="post"
+                onsubmit="return confirm('¿Está seguro que desea eliminar este registro?');" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit"
+                      class="inline-flex items-center justify-center w-8 h-8 rounded-full text-white bg-gradient-to-br from-rose-600 to-rose-800 hover:from-rose-700 hover:to-rose-900 shadow-md"
+                      title="Eliminar">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0H7" />
+                  </svg>
+              </button>
+          </form>
+          {% endif %}
         </div>
       </dl>
     </div>
@@ -134,6 +186,7 @@
       <table class="min-w-[1100px] w-full table-auto bg-white">
         <thead class="bg-red-600 text-white text-sm sticky top-0 z-0">
           <tr>
+            <th class="px-2 py-3 text-center w-12">#</th>
             <th class="px-2 py-3 text-center">Activo</th>
             <th class="px-2 py-3 text-center">Marca</th>
             <th class="px-2 py-3 text-center">Modelo</th>
@@ -146,11 +199,15 @@
             <th class="px-2 py-3 text-center">Registrado por</th>
             <th class="px-2 py-3 text-center">Fecha Creación</th>
             <th class="px-2 py-3 text-center">Fecha Modificación</th>
+            {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' or group_name_singular == 'Auxiliares Operador ADR' %}
+            <th class="px-2 py-3 text-center">Acciones</th>
+            {% endif %}
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-200 text-sm">
           {% for a in items %}
           <tr class="hover:bg-gray-50 align-top">
+            <td class="px-1 py-1 text-center text-gray-600 font-mono text-xs">{{ forloop.counter0|add:page_obj.start_index }}</td>
             <td class="px-1 py-1 break-words text-center">{{ a.activo|capfirst }}</td>
             <td class="px-1 py-1 break-words text-center">{{ a.marca|capfirst }}</td>
             <td class="px-1 py-1 break-words text-center">{{ a.modelo|capfirst }}</td>
@@ -169,10 +226,46 @@
             </td>
             <td class="px-1 py-1 break-words text-center">{{ a.fecha_creacion|date:"d/m/Y" }}</td>
             <td class="px-1 py-1 break-words text-center">{{ a.fecha_modificacion|date:"d/m/Y" }}</td>
+            
+            {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' or group_name_singular == 'Auxiliares Operador ADR' %}
+            <td class="px-2 py-2 text-center">
+              <div class="flex items-center justify-center gap-2">
+                <!-- View -->
+                <a href="{% url 'detalle_SwitchDeRed' a.pk %}"
+                   class="inline-flex items-center justify-center w-8 h-8 rounded-full text-white bg-gradient-to-br from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 shadow-md"
+                   title="Ver">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 12s4.5-7 10-7 10 7 10 7-4.5 7-10 7-10-7-10-7z" />
+                       <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                </a>
+                <!-- Edit -->
+                <a href="{% url 'edit_switch_de_red' a.pk %}" title="Editar"
+                    class="inline-flex items-center justify-center w-8 h-8 rounded-full text-white bg-gradient-to-br from-amber-500 to-amber-700 hover:from-amber-600 hover:to-amber-800 shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536L9 18H5.5V14.5z" />
+                    </svg>
+                </a>
+                {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' %}
+                <!-- Delete -->
+                <form action="{% url 'delete_switch_de_red' 'switch_de_red' a.pk %}" method="post"
+                      onsubmit="return confirm('¿Está seguro que desea eliminar este registro?');" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" title="Eliminar"
+                        class="inline-flex items-center justify-center w-8 h-8 rounded-full text-white bg-gradient-to-br from-rose-600 to-rose-800 hover:from-rose-700 hover:to-rose-900 shadow-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0H7" />
+                        </svg>
+                    </button>
+                </form>
+                {% endif %}
+              </div>
+            </td>
+            {% endif %}
           </tr>
           {% empty %}
           <tr>
-            <td colspan="12" class="py-4 text-center text-gray-500">
+            <td colspan="14" class="py-4 text-center text-gray-500">
               No hay registros en switch_de_red.
             </td>
           </tr>
@@ -186,5 +279,15 @@
   <p class="text-gray-600 mt-4">No hay registros en switch_de_red.</p>
   {% endif %}
   {% endwith %}
+
+  {# Controles de Paginación #}
+  {% include 'partials/pagination.html' %}
 </div>
+<script>
+  function confirmClearSwitchDeRed() {
+    if (confirm('¿Estás seguro de que deseas eliminar TODOS los registros de Switch de Red? Esta acción no se puede deshacer.')) {
+      document.getElementById('clearFormSwitchDeRed').submit();
+    }
+  }
+</script>
 {% endblock content %}
