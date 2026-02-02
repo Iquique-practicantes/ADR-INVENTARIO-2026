@@ -47,12 +47,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'cloudinary_storage',
+    'cloudinary',
     'django_browser_reload',
     'crispy_forms',
     'crispy_tailwind',
     'adr',
     'accounts.apps.AccountsConfig',
-
+    'core',
 ]
 
 
@@ -168,6 +170,21 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
+# Configuración de Cloudinary
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
+cloudinary.config(
+    cloud_name=config('CLOUDINARY_CLOUD_NAME'),
+    api_key=config('CLOUDINARY_API_KEY'),
+    api_secret=config('CLOUDINARY_API_SECRET'),
+    secure=True
+)
+
+# Usar Cloudinary como backend de almacenamiento para archivos media
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
 
 LOGGING = {
     'version': 1,
@@ -207,10 +224,10 @@ else:
 EMAIL_RECIPIENTS = [
     'wtapia@inacap.cl',
     'hleris@inacap.cl',
-    'mvergarao@inacap.cl',
-    'jhonorato@inacap.cl',
-    'enavarrom@inacap.cl',
-    'algonzalezv@inacap.cl',
+    #'mvergarao@inacap.cl',
+    #'jhonorato@inacap.cl',
+    #'enavarrom@inacap.cl',
+    #'algonzalezv@inacap.cl',
 ]
 # Parámetros de seguridad para el login
 LOGIN_FAILED_THRESHOLD = 3         # intentos fallidos para alertar

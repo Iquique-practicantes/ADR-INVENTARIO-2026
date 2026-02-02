@@ -1349,6 +1349,7 @@ MODELS_DICT = {
     'tablet': Tablet,
     'equipos_isla': EquiposIslaModel,
     'switch_de_red': SwitchDeRedModel,
+    'televisor': Televisor,
 }
 
 
