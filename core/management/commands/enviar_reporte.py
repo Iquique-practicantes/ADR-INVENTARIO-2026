@@ -73,34 +73,23 @@ class Command(BaseCommand):
         # DEBUG: Mostrar lista completa de destinatarios
         self.stdout.write(self.style.WARNING(f'DEBUG - Lista de destinatarios configurada: {to_emails}'))
         self.stdout.write(self.style.WARNING(f'DEBUG - Total de destinatarios: {len(to_emails)}'))
-
-        # Enviar correo individualmente a cada destinatario para mejorar entregabilidad
-        destinatarios_exitosos = []
-        destinatarios_fallidos = []
-
-        for destinatario in to_emails:
-            try:
-                email = EmailMessage(
-                    subject=subject,
-                    body=body,
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    to=[destinatario]
-                )
-                
-                # Adjuntar archivo desde memoria
-                email.attach(filename, output.getvalue(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-                
-                self.stdout.write(self.style.WARNING(f'Enviando a: {destinatario}...'))
-                email.send()
-                destinatarios_exitosos.append(destinatario)
-                
-            except Exception as e:
-                self.stdout.write(self.style.ERROR(f'Error al enviar a {destinatario}: {str(e)}'))
-                destinatarios_fallidos.append(destinatario)
-
-        # Resumen final
-        if destinatarios_exitosos:
-            self.stdout.write(self.style.SUCCESS(f'Reporte enviado exitosamente a: {", ".join(destinatarios_exitosos)}'))
+        self.stdout.write(self.style.WARNING(f'DEBUG - Tipo de to_emails: {type(to_emails)}'))
         
-        if destinatarios_fallidos:
-            self.stdout.write(self.style.ERROR(f'Falló el envío a: {", ".join(destinatarios_fallidos)}'))
+        # Crear y enviar el correo EN GRUPO
+        email = EmailMessage(
+            subject=subject,
+            body=body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=to_emails  # Lista completa de destinatarios
+        )
+        
+        # Adjuntar archivo desde memoria
+        email.attach(filename, output.getvalue(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        
+        try:
+            email.send()
+            self.stdout.write(self.style.SUCCESS(f'Reporte enviado exitosamente a {len(to_emails)} destinatarios:'))
+            for destinatario in to_emails:
+                self.stdout.write(self.style.SUCCESS(f'  - {destinatario}'))
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f'Error al enviar el reporte: {str(e)}'))
