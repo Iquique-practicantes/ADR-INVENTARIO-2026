@@ -237,6 +237,7 @@ else:
     SERVER_EMAIL = EMAIL_HOST_USER
 
 
+# Lista de destinatarios del reporte semanal
 EMAIL_RECIPIENTS = [
     'wtapia@inacap.cl',
     'hleris@inacap.cl',
