@@ -238,14 +238,21 @@ else:
 
 
 # Lista de destinatarios del reporte semanal
-EMAIL_RECIPIENTS = [
-    'wtapia@inacap.cl',
-    'hleris@inacap.cl',
-    'mvergarao@inacap.cl',
-    'jhonorato@inacap.cl',
-    'enavarrom@inacap.cl',
-    'algonzalezv@inacap.cl',
-]
+# Soporta variable de entorno (string separado por comas) o lista por defecto
+_email_recipients_env = config('EMAIL_RECIPIENTS', default='')
+if _email_recipients_env:
+    # Si viene de variable de entorno (GitHub Actions), separar por comas
+    EMAIL_RECIPIENTS = [email.strip() for email in _email_recipients_env.split(',')]
+else:
+    # Fallback a lista hardcodeada (para desarrollo local)
+    EMAIL_RECIPIENTS = [
+        'wtapia@inacap.cl',
+        'hleris@inacap.cl',
+        'mvergarao@inacap.cl',
+        'jhonorato@inacap.cl',
+        'enavarrom@inacap.cl',
+        'algonzalezv@inacap.cl',
+    ]
 # Parámetros de seguridad para el login
 LOGIN_FAILED_THRESHOLD = 3         # intentos fallidos para alertar
 LOGIN_FAILED_WINDOW_SECONDS = 900  # ventana de 15 min para el conteo (ajústalo)
