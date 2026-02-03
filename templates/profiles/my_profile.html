@@ -12,31 +12,22 @@
       <div class="hidden md:flex flex-shrink-0 md:w-1/4 items-start justify-center p-4 mt-32">
         <div class="w-full max-w-sm">
           {% if user_profile.profile.image and user_profile.profile.image.name %}
-            <img id="profilePreviewDesk"
-                 class="w-full h-auto rounded-xl shadow-xl ring-1 ring-black/10"
-                 src="{{ user_profile.profile.image.url }}"
-                 data-original-src="{{ user_profile.profile.image.url }}"
-                 alt="Foto de perfil"
-                 /* onerror='this.onerror=null; this.src="{% get_media_prefix %}default.png"' */ />
-            <div class="mt-2 text-xs text-red-600 break-all p-2 bg-yellow-50 border border-yellow-200 rounded">
-                <strong>Debug URL:</strong> {{ user_profile.profile.image.url }}
-            </div>
+          <img id="profilePreviewDesk" class="w-full h-auto rounded-xl shadow-xl ring-1 ring-black/10"
+            src="{{ user_profile.profile.image.url }}" data-original-src="{{ user_profile.profile.image.url }}"
+            alt="Foto de perfil" onerror='this.onerror=null; this.src="{% get_media_prefix %}default.png"' />
           {% else %}
-            <img id="profilePreviewDesk"
-                 class="w-full h-auto rounded-xl shadow-xl ring-1 ring-black/10"
-                 src="{% get_media_prefix %}default.png"
-                 data-original-src="{% get_media_prefix %}default.png"
-                 alt="Foto por defecto" />
-            <div class="mt-2 text-xs text-gray-500">Sin imagen (usando default)</div>
+          <img id="profilePreviewDesk" class="w-full h-auto rounded-xl shadow-xl ring-1 ring-black/10"
+            src="{% get_media_prefix %}default.png" data-original-src="{% get_media_prefix %}default.png"
+            alt="Foto por defecto" />
           {% endif %}
 
           {# --- Botón ELIMINAR (escritorio) --- #}
           {% if user_profile.profile.image and user_profile.profile.image.name %}
           <form method="post" action="{% url 'my_profile' %}" class="mt-4"
-                onsubmit="return confirm('¿Seguro que deseas eliminar la foto de perfil?');">
+            onsubmit="return confirm('¿Seguro que deseas eliminar la foto de perfil?');">
             {% csrf_token %}
             <button type="submit" name="delete_image" value="1"
-                    class="w-full bg-red-700 hover:bg-red-800 text-white font-medium py-2 px-4 rounded-lg shadow transition">
+              class="w-full bg-red-700 hover:bg-red-800 text-white font-medium py-2 px-4 rounded-lg shadow transition">
               Eliminar foto
             </button>
           </form>
@@ -45,28 +36,25 @@
       </div>
 
       {# -------------------- Panel derecho: datos + foto -------------------- #}
-      <div class="flex-1 p-4 md:p-8 bg-gradient-to-r from-white to-gray-300 rounded-xl shadow-2xl relative mt-24 md:mt-32">
+      <div
+        class="flex-1 p-4 md:p-8 bg-gradient-to-r from-white to-gray-300 rounded-xl shadow-2xl relative mt-24 md:mt-32">
 
         {# --- Avatar SOLO en móvil (circular) --- #}
         <div class="md:hidden mb-6 flex items-center justify-between">
           <div class="flex items-center gap-3">
             {% if user_profile.profile.image and user_profile.profile.image.name %}
-              <div class="w-16 h-16 rounded-full overflow-hidden ring-2 ring-zinc-200 shadow-sm shrink-0">
-                <img id="profilePreviewMobile"
-                     src="{{ user_profile.profile.image.url }}"
-                     data-original-src="{{ user_profile.profile.image.url }}"
-                     alt="Foto de perfil"
-                     class="w-full h-full object-cover"
-                     onerror='this.onerror=null; this.src="{% get_media_prefix %}default.png"' />
-              </div>
+            <div class="w-16 h-16 rounded-full overflow-hidden ring-2 ring-zinc-200 shadow-sm shrink-0">
+              <img id="profilePreviewMobile" src="{{ user_profile.profile.image.url }}"
+                data-original-src="{{ user_profile.profile.image.url }}" alt="Foto de perfil"
+                class="w-full h-full object-cover"
+                onerror='this.onerror=null; this.src="{% get_media_prefix %}default.png"' />
+            </div>
             {% else %}
-              <div class="w-16 h-16 rounded-full overflow-hidden ring-2 ring-zinc-200 shadow-sm shrink-0">
-                <img id="profilePreviewMobile"
-                     src="{% get_media_prefix %}default.png"
-                     data-original-src="{% get_media_prefix %}default.png"
-                     alt="Foto por defecto"
-                     class="w-full h-full object-cover" />
-              </div>
+            <div class="w-16 h-16 rounded-full overflow-hidden ring-2 ring-zinc-200 shadow-sm shrink-0">
+              <img id="profilePreviewMobile" src="{% get_media_prefix %}default.png"
+                data-original-src="{% get_media_prefix %}default.png" alt="Foto por defecto"
+                class="w-full h-full object-cover" />
+            </div>
             {% endif %}
             <div class="text-sm text-zinc-700">
               <div class="font-medium">Tu foto</div>
@@ -76,17 +64,17 @@
 
           <div class="flex items-center gap-2">
             <button type="button" id="avatarPickMobile"
-                    class="h-9 px-3 rounded-lg bg-zinc-200 text-zinc-700 hover:bg-zinc-300">
+              class="h-9 px-3 rounded-lg bg-zinc-200 text-zinc-700 hover:bg-zinc-300">
               Cambiar
             </button>
 
             {# --- Botón ELIMINAR (móvil) --- #}
             {% if user_profile.profile.image and user_profile.profile.image.name %}
             <form method="post" action="{% url 'my_profile' %}"
-                  onsubmit="return confirm('¿Seguro que deseas eliminar la foto de perfil?');">
+              onsubmit="return confirm('¿Seguro que deseas eliminar la foto de perfil?');">
               {% csrf_token %}
               <button type="submit" name="delete_image" value="1"
-                      class="h-9 px-3 rounded-lg bg-red-700 text-white hover:bg-red-800 shadow">
+                class="h-9 px-3 rounded-lg bg-red-700 text-white hover:bg-red-800 shadow">
                 Eliminar
               </button>
             </form>
@@ -97,7 +85,7 @@
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-zinc-800 text-2xl font-semibold">Mi perfil</h2>
           <a href="{% url 'password_change' %}"
-             class="inline-flex items-center justify-center h-10 px-4 rounded-lg bg-red-900 text-white hover:bg-red-800 transition shadow">
+            class="inline-flex items-center justify-center h-10 px-4 rounded-lg bg-red-900 text-white hover:bg-red-800 transition shadow">
             Cambiar contraseña
           </a>
         </div>
@@ -126,17 +114,17 @@
 
           {# Errores del formulario #}
           {% if user_form.non_field_errors %}
-            <div class="text-red-600 text-sm">{{ user_form.non_field_errors }}</div>
+          <div class="text-red-600 text-sm">{{ user_form.non_field_errors }}</div>
           {% endif %}
           {% for field in user_form %}
-            {% for error in field.errors %}
-              <div class="text-red-600 text-sm">{{ field.label }}: {{ error }}</div>
-            {% endfor %}
+          {% for error in field.errors %}
+          <div class="text-red-600 text-sm">{{ field.label }}: {{ error }}</div>
+          {% endfor %}
           {% endfor %}
 
           <div class="flex justify-end">
             <button type="submit" name="save_user"
-                    class="px-5 h-10 rounded-lg bg-red-700 text-white shadow hover:bg-red-800 transition">
+              class="px-5 h-10 rounded-lg bg-red-700 text-white shadow hover:bg-red-800 transition">
               Guardar cambios
             </button>
           </div>
@@ -149,9 +137,8 @@
           {% csrf_token %}
           <div class="mb-2 text-zinc-700 text-sm font-medium">Actualizar foto de perfil</div>
 
-          <div id="dropzone"
-               role="button" tabindex="0"
-               class="group flex flex-col items-center justify-center w-full h-28 md:h-32 rounded-xl border border-dashed border-zinc-400 bg-white/70 hover:bg-white transition cursor-pointer px-4 text-center">
+          <div id="dropzone" role="button" tabindex="0"
+            class="group flex flex-col items-center justify-center w-full h-28 md:h-32 rounded-xl border border-dashed border-zinc-400 bg-white/70 hover:bg-white transition cursor-pointer px-4 text-center">
             <div class="text-sm text-zinc-600">
               Arrastra una imagen aquí o <span class="underline font-semibold">haz clic para seleccionar</span>
             </div>
@@ -164,24 +151,25 @@
 
           <div class="mt-5 flex justify-end gap-3">
             <button type="button" id="clearBtn"
-                    class="hidden h-10 px-4 rounded-lg bg-zinc-200 text-zinc-700 hover:bg-zinc-300 transition">
+              class="hidden h-10 px-4 rounded-lg bg-zinc-200 text-zinc-700 hover:bg-zinc-300 transition">
               Limpiar
             </button>
             <button type="submit" id="saveBtn" name="save_photo" value="1"
-                    class="h-10 px-5 rounded-lg bg-red-900 text-white shadow-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red-800 transition"
-                    disabled>
+              class="h-10 px-5 rounded-lg bg-red-900 text-white shadow-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red-800 transition"
+              disabled>
               Guardar foto
             </button>
           </div>
         </form>
 
         {% if messages %}
-          {% for message in messages %}
-            <div class="mt-5 p-3 rounded-lg border
+        {% for message in messages %}
+        <div
+          class="mt-5 p-3 rounded-lg border
                         {% if message.tags == 'success' %}bg-green-50 border-green-200 text-green-700{% else %}bg-red-50 border-red-200 text-red-700{% endif %}">
-              {{ message }}
-            </div>
-          {% endfor %}
+          {{ message }}
+        </div>
+        {% endfor %}
         {% endif %}
       </div>
     </div>
@@ -204,9 +192,9 @@
 
     <div class="mt-4 flex justify-end gap-3">
       <button type="button" id="cancelCrop"
-              class="h-10 px-4 rounded-lg bg-zinc-200 text-zinc-700 hover:bg-zinc-300">Cancelar</button>
+        class="h-10 px-4 rounded-lg bg-zinc-200 text-zinc-700 hover:bg-zinc-300">Cancelar</button>
       <button type="button" id="applyCrop"
-              class="h-10 px-4 rounded-lg bg-red-900 text-white hover:bg-red-800">Aplicar</button>
+        class="h-10 px-4 rounded-lg bg-red-900 text-white hover:bg-red-800">Aplicar</button>
     </div>
   </div>
 </div>
@@ -214,152 +202,152 @@
 <link rel="stylesheet" href="https://unpkg.com/cropperjs@1.5.13/dist/cropper.min.css">
 <script src="https://unpkg.com/cropperjs@1.5.13/dist/cropper.min.js"></script>
 <script>
-(function () {
-  const input = document.getElementById('id_image');
-  const drop  = document.getElementById('dropzone');
+  (function () {
+    const input = document.getElementById('id_image');
+    const drop = document.getElementById('dropzone');
 
-  const previewMobile = document.getElementById('profilePreviewMobile');
-  const previewDesk   = document.getElementById('profilePreviewDesk');
-  const originalSrcMobile = previewMobile ? previewMobile.getAttribute('data-original-src') : null;
-  const originalSrcDesk   = previewDesk   ? previewDesk.getAttribute('data-original-src')   : null;
+    const previewMobile = document.getElementById('profilePreviewMobile');
+    const previewDesk = document.getElementById('profilePreviewDesk');
+    const originalSrcMobile = previewMobile ? previewMobile.getAttribute('data-original-src') : null;
+    const originalSrcDesk = previewDesk ? previewDesk.getAttribute('data-original-src') : null;
 
-  const fileName = document.getElementById('fileName');
-  const saveBtn  = document.getElementById('saveBtn');
-  const clearBtn = document.getElementById('clearBtn');
+    const fileName = document.getElementById('fileName');
+    const saveBtn = document.getElementById('saveBtn');
+    const clearBtn = document.getElementById('clearBtn');
 
-  const avatarPickMobile = document.getElementById('avatarPickMobile');
-  if (avatarPickMobile) avatarPickMobile.addEventListener('click', openPicker);
+    const avatarPickMobile = document.getElementById('avatarPickMobile');
+    if (avatarPickMobile) avatarPickMobile.addEventListener('click', openPicker);
 
-  const modal = document.getElementById('cropperModal');
-  const img   = document.getElementById('cropperImage');
-  const applyBtn = document.getElementById('applyCrop');
-  const cancelBtn = document.getElementById('cancelCrop');
-  const previewCircle = document.getElementById('previewCircle');
+    const modal = document.getElementById('cropperModal');
+    const img = document.getElementById('cropperImage');
+    const applyBtn = document.getElementById('applyCrop');
+    const cancelBtn = document.getElementById('cancelCrop');
+    const previewCircle = document.getElementById('previewCircle');
 
-  let cropper = null;
-  let objectURL = null;
-  let opening = false;
+    let cropper = null;
+    let objectURL = null;
+    let opening = false;
 
-  function openPicker() {
-    if (opening) return;
-    opening = true;
-    input.value = '';        // permite volver a elegir el MISMO archivo
-    input.click();
-    setTimeout(() => { opening = false; }, 250);
-  }
-
-  // Click y accesibilidad del dropzone
-  drop.addEventListener('click', openPicker);
-  drop.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPicker(); }
-  });
-
-  // Drag & drop
-  ['dragenter','dragover'].forEach(ev =>
-    drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('ring-2','ring-red-800/40'); })
-  );
-  ['dragleave','drop'].forEach(ev =>
-    drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('ring-2','ring-red-800/40'); })
-  );
-  drop.addEventListener('drop', e => {
-    const f = e.dataTransfer.files && e.dataTransfer.files[0];
-    if (f) openCropper(f);
-  });
-
-  // Cuando cambia el input, abrimos el cropper
-  input.addEventListener('change', () => {
-    const f = input.files && input.files[0];
-    if (f) openCropper(f);
-  });
-
-  function openCropper(file) {
-    if (file.size > 2 * 1024 * 1024) {
-      alert("Tamaño máximo permitido: 2 MB.");
-      input.value = '';
-      return;
-    }
-    // Aceptamos SOLO JPG y PNG
-    if (!['image/jpeg','image/png'].includes(file.type)) {
-      alert("Formato no permitido. Usa JPG o PNG.");
-      input.value = '';
-      return;
+    function openPicker() {
+      if (opening) return;
+      opening = true;
+      input.value = '';        // permite volver a elegir el MISMO archivo
+      input.click();
+      setTimeout(() => { opening = false; }, 250);
     }
 
-    if (objectURL) URL.revokeObjectURL(objectURL);
-    objectURL = URL.createObjectURL(file);
-    img.src = objectURL;
+    // Click y accesibilidad del dropzone
+    drop.addEventListener('click', openPicker);
+    drop.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPicker(); }
+    });
 
-    img.onload = () => {
-      if (img.naturalWidth < 400 || img.naturalHeight < 400) {
-        alert("La imagen debe tener al menos 400×400 píxeles.");
-        cleanTemp();
+    // Drag & drop
+    ['dragenter', 'dragover'].forEach(ev =>
+      drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('ring-2', 'ring-red-800/40'); })
+    );
+    ['dragleave', 'drop'].forEach(ev =>
+      drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('ring-2', 'ring-red-800/40'); })
+    );
+    drop.addEventListener('drop', e => {
+      const f = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (f) openCropper(f);
+    });
+
+    // Cuando cambia el input, abrimos el cropper
+    input.addEventListener('change', () => {
+      const f = input.files && input.files[0];
+      if (f) openCropper(f);
+    });
+
+    function openCropper(file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert("Tamaño máximo permitido: 2 MB.");
+        input.value = '';
+        return;
+      }
+      // Aceptamos SOLO JPG y PNG
+      if (!['image/jpeg', 'image/png'].includes(file.type)) {
+        alert("Formato no permitido. Usa JPG o PNG.");
         input.value = '';
         return;
       }
 
-      if (cropper) cropper.destroy();
-      cropper = new Cropper(img, {
-        aspectRatio: 1,
-        viewMode: 1,
-        dragMode: 'move',
-        autoCropArea: 1,
-        preview: previewCircle,
-      });
-    };
+      if (objectURL) URL.revokeObjectURL(objectURL);
+      objectURL = URL.createObjectURL(file);
+      img.src = objectURL;
 
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-  }
+      img.onload = () => {
+        if (img.naturalWidth < 400 || img.naturalHeight < 400) {
+          alert("La imagen debe tener al menos 400×400 píxeles.");
+          cleanTemp();
+          input.value = '';
+          return;
+        }
 
-  function closeCropper() {
-    modal.classList.add('hidden'); modal.classList.remove('flex');
-    if (cropper) { cropper.destroy(); cropper = null; }
-    cleanTemp();
-  }
+        if (cropper) cropper.destroy();
+        cropper = new Cropper(img, {
+          aspectRatio: 1,
+          viewMode: 1,
+          dragMode: 'move',
+          autoCropArea: 1,
+          preview: previewCircle,
+        });
+      };
 
-  function cleanTemp() {
-    if (objectURL) { URL.revokeObjectURL(objectURL); objectURL = null; }
-  }
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
 
-  cancelBtn.addEventListener('click', () => {
-    closeCropper();
-    input.value = '';
-  });
+    function closeCropper() {
+      modal.classList.add('hidden'); modal.classList.remove('flex');
+      if (cropper) { cropper.destroy(); cropper = null; }
+      cleanTemp();
+    }
 
-  applyBtn.addEventListener('click', () => {
-    if (!cropper) return;
+    function cleanTemp() {
+      if (objectURL) { URL.revokeObjectURL(objectURL); objectURL = null; }
+    }
 
-    cropper.getCroppedCanvas({ width: 512, height: 512 })
-      .toBlob((blob) => {
-        // Exportamos PNG (compatibilidad)
-        const file = new File([blob], 'avatar.png', { type: 'image/png' });
+    cancelBtn.addEventListener('click', () => {
+      closeCropper();
+      input.value = '';
+    });
 
-        const dt = new DataTransfer();
-        dt.items.add(file);
-        input.files = dt.files;
+    applyBtn.addEventListener('click', () => {
+      if (!cropper) return;
 
-        const previewURL = URL.createObjectURL(blob);
-        if (previewMobile) previewMobile.src = previewURL;
-        if (previewDesk)   previewDesk.src   = previewURL;
-        if (fileName) fileName.textContent = file.name;
+      cropper.getCroppedCanvas({ width: 512, height: 512 })
+        .toBlob((blob) => {
+          // Exportamos PNG (compatibilidad)
+          const file = new File([blob], 'avatar.png', { type: 'image/png' });
 
-        if (saveBtn) saveBtn.disabled = false;
-        if (clearBtn) clearBtn.classList.remove('hidden');
+          const dt = new DataTransfer();
+          dt.items.add(file);
+          input.files = dt.files;
 
-        closeCropper();
-      }, 'image/png');
-  });
+          const previewURL = URL.createObjectURL(blob);
+          if (previewMobile) previewMobile.src = previewURL;
+          if (previewDesk) previewDesk.src = previewURL;
+          if (fileName) fileName.textContent = file.name;
 
-  function cleanTemp(){ if (objectURL) { URL.revokeObjectURL(objectURL); objectURL = null; } }
+          if (saveBtn) saveBtn.disabled = false;
+          if (clearBtn) clearBtn.classList.remove('hidden');
 
-  clearBtn && clearBtn.addEventListener('click', () => {
-    input.value = '';
-    if (fileName) fileName.textContent = '';
-    if (saveBtn) saveBtn.disabled = true;
-    clearBtn.classList.add('hidden');
-    if (previewMobile && originalSrcMobile) previewMobile.src = originalSrcMobile;
-    if (previewDesk   && originalSrcDesk)   previewDesk.src   = originalSrcDesk;
-  });
-})();
+          closeCropper();
+        }, 'image/png');
+    });
+
+    function cleanTemp() { if (objectURL) { URL.revokeObjectURL(objectURL); objectURL = null; } }
+
+    clearBtn && clearBtn.addEventListener('click', () => {
+      input.value = '';
+      if (fileName) fileName.textContent = '';
+      if (saveBtn) saveBtn.disabled = true;
+      clearBtn.classList.add('hidden');
+      if (previewMobile && originalSrcMobile) previewMobile.src = originalSrcMobile;
+      if (previewDesk && originalSrcDesk) previewDesk.src = originalSrcDesk;
+    });
+  })();
 </script>
 {% endblock %}
