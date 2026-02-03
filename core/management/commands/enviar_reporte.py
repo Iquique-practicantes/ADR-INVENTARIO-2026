@@ -69,6 +69,10 @@ class Command(BaseCommand):
         body = f'Adjunto encontrará el reporte actualizado del inventario con {models_processed} categorías de equipos.'
         from_email = settings.DEFAULT_FROM_EMAIL
         to_emails = settings.EMAIL_RECIPIENTS
+        
+        # DEBUG: Mostrar lista completa de destinatarios
+        self.stdout.write(self.style.WARNING(f'DEBUG - Lista de destinatarios configurada: {to_emails}'))
+        self.stdout.write(self.style.WARNING(f'DEBUG - Total de destinatarios: {len(to_emails)}'))
 
         # Enviar correo individualmente a cada destinatario para mejorar entregabilidad
         destinatarios_exitosos = []
