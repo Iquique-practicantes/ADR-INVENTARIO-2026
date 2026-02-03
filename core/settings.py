@@ -183,7 +183,23 @@ cloudinary.config(
 )
 
 # Usar Cloudinary como backend de almacenamiento para archivos media
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+# Usar Cloudinary como backend de almacenamiento para archivos media
+# Django 5.x usa STORAGES en lugar de DEFAULT_FILE_STORAGE
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
+# Configuración explícita para django-cloudinary-storage
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': config('CLOUDINARY_API_KEY'),
+    'API_SECRET': config('CLOUDINARY_API_SECRET'),
+}
 
 
 LOGGING = {
@@ -224,10 +240,10 @@ else:
 EMAIL_RECIPIENTS = [
     'wtapia@inacap.cl',
     'hleris@inacap.cl',
-    #'mvergarao@inacap.cl',
-    #'jhonorato@inacap.cl',
-    #'enavarrom@inacap.cl',
-    #'algonzalezv@inacap.cl',
+    'mvergarao@inacap.cl',
+    'jhonorato@inacap.cl',
+    'enavarrom@inacap.cl',
+    'algonzalezv@inacap.cl',
 ]
 # Parámetros de seguridad para el login
 LOGIN_FAILED_THRESHOLD = 3         # intentos fallidos para alertar
