@@ -80,6 +80,9 @@ class Command(BaseCommand):
         # Adjuntar archivo desde memoria
         email.attach(filename, output.getvalue(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         
+        # LOG DE AUDITORÍA: Mostrar explícitamente a quién se le va a enviar
+        self.stdout.write(self.style.WARNING(f'Intentando enviar correo a {len(to_emails)} personas: {", ".join(to_emails)}'))
+
         try:
             email.send()
             self.stdout.write(self.style.SUCCESS(f'Reporte enviado exitosamente a {len(to_emails)} destinatarios.'))
