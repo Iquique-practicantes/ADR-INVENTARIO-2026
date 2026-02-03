@@ -70,21 +70,33 @@ class Command(BaseCommand):
         from_email = settings.DEFAULT_FROM_EMAIL
         to_emails = settings.EMAIL_RECIPIENTS
 
-        email = EmailMessage(
-            subject,
-            body,
-            from_email,
-            to_emails,
-        )
-        
-        # Adjuntar archivo desde memoria
-        email.attach(filename, output.getvalue(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        
-        # LOG DE AUDITORÍA: Mostrar explícitamente a quién se le va a enviar
-        self.stdout.write(self.style.WARNING(f'Intentando enviar correo a {len(to_emails)} personas: {", ".join(to_emails)}'))
+        # Enviar correo individualmente a cada destinatario para mejorar entregabilidad
+        destinatarios_exitosos = []
+        destinatarios_fallidos = []
 
-        try:
-            email.send()
-            self.stdout.write(self.style.SUCCESS(f'Reporte enviado exitosamente a {len(to_emails)} destinatarios.'))
-        except Exception as e:
-            self.stdout.write(self.style.ERROR(f'Error al enviar correo: {str(e)}'))
+        for destinatario in to_emails:
+            try:
+                email = EmailMessage(
+                    subject=subject,
+                    body=body,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[destinatario]
+                )
+                
+                # Adjuntar archivo desde memoria
+                email.attach(filename, output.getvalue(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                
+                self.stdout.write(self.style.WARNING(f'Enviando a: {destinatario}...'))
+                email.send()
+                destinatarios_exitosos.append(destinatario)
+                
+            except Exception as e:
+                self.stdout.write(self.style.ERROR(f'Error al enviar a {destinatario}: {str(e)}'))
+                destinatarios_fallidos.append(destinatario)
+
+        # Resumen final
+        if destinatarios_exitosos:
+            self.stdout.write(self.style.SUCCESS(f'Reporte enviado exitosamente a: {", ".join(destinatarios_exitosos)}'))
+        
+        if destinatarios_fallidos:
+            self.stdout.write(self.style.ERROR(f'Falló el envío a: {", ".join(destinatarios_fallidos)}'))
