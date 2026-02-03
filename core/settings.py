@@ -110,11 +110,11 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST'),
-        'PORT': config('DB_PORT', default='3306'),
+        'NAME': config('DB_NAME').strip(),
+        'USER': config('DB_USER').strip(),
+        'PASSWORD': config('DB_PASSWORD').strip(),
+        'HOST': config('DB_HOST').strip(),
+        'PORT': config('DB_PORT', default='3306').strip(),
         'OPTIONS': {
             'ssl': {'ssl': {}}  # o especificar CA si Clever-Cloud te lo da
         }
@@ -176,9 +176,9 @@ import cloudinary.uploader
 import cloudinary.api
 
 cloudinary.config(
-    cloud_name=config('CLOUDINARY_CLOUD_NAME'),
-    api_key=config('CLOUDINARY_API_KEY'),
-    api_secret=config('CLOUDINARY_API_SECRET'),
+    cloud_name=config('CLOUDINARY_CLOUD_NAME').strip(),
+    api_key=config('CLOUDINARY_API_KEY').strip(),
+    api_secret=config('CLOUDINARY_API_SECRET').strip(),
     secure=True
 )
 
@@ -196,9 +196,9 @@ STORAGES = {
 
 # Configuración explícita para django-cloudinary-storage
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY': config('CLOUDINARY_API_KEY'),
-    'API_SECRET': config('CLOUDINARY_API_SECRET'),
+    'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME').strip(),
+    'API_KEY': config('CLOUDINARY_API_KEY').strip(),
+    'API_SECRET': config('CLOUDINARY_API_SECRET').strip(),
 }
 
 
@@ -231,8 +231,8 @@ else:
     EMAIL_USE_TLS = True
     EMAIL_USE_SSL = False
     EMAIL_TIMEOUT = 30         # evita bloqueos largos
-    EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-    EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+    EMAIL_HOST_USER = config('EMAIL_HOST_USER').strip()
+    EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD').strip()
     DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
     SERVER_EMAIL = EMAIL_HOST_USER
 
