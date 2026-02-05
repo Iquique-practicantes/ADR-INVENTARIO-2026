@@ -37,11 +37,20 @@ def make_avatar_square(django_file, size=512, fmt="WEBP", quality=86):
 def enviar_notificacion_asunto(asunto: str, mensaje: str, destinatarios: list[str], from_email: str | None = None):
     """
     Envía un correo en TEXTO PLANO.
+    Si falla, registra el error pero no detiene la operación.
     """
-    send_mail(
-        subject=asunto,
-        message=mensaje,
-        from_email=from_email or getattr(settings, "DEFAULT_FROM_EMAIL", None),
-        recipient_list=destinatarios,
-        fail_silently=False,
-    )
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        send_mail(
+            subject=asunto,
+            message=mensaje,
+            from_email=from_email or getattr(settings, "DEFAULT_FROM_EMAIL", None),
+            recipient_list=destinatarios,
+            fail_silently=False,
+        )
+        logger.info(f"Correo enviado exitosamente: {asunto} a {destinatarios}")
+    except Exception as e:
+        logger.error(f"Error al enviar correo '{asunto}' a {destinatarios}: {e}")
+        # No re-lanzamos la excepción para evitar error 500
