@@ -230,7 +230,7 @@ else:
     EMAIL_PORT = 587      #  #para subir cambios en la nube cambair a 587
     EMAIL_USE_TLS = True
     EMAIL_USE_SSL = False
-    EMAIL_TIMEOUT = 30         # evita bloqueos largos
+    EMAIL_TIMEOUT = 10         # Timeout corto para evitar worker timeout en Gunicorn
     EMAIL_HOST_USER = config('EMAIL_HOST_USER').strip()
     EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD').strip()
     DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

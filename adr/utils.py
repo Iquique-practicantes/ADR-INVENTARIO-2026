@@ -38,6 +38,7 @@ def enviar_notificacion_asunto(asunto: str, mensaje: str, destinatarios: list[st
     """
     Envía un correo en TEXTO PLANO.
     Si falla, registra el error pero no detiene la operación.
+    Usa fail_silently=True para evitar bloquear el worker de Gunicorn.
     """
     import logging
     logger = logging.getLogger(__name__)
@@ -48,9 +49,9 @@ def enviar_notificacion_asunto(asunto: str, mensaje: str, destinatarios: list[st
             message=mensaje,
             from_email=from_email or getattr(settings, "DEFAULT_FROM_EMAIL", None),
             recipient_list=destinatarios,
-            fail_silently=False,
+            fail_silently=True,  # IMPORTANTE: No bloquear si falla
         )
-        logger.info(f"Correo enviado exitosamente: {asunto} a {destinatarios}")
+        logger.info(f"Correo enviado: {asunto} a {destinatarios}")
     except Exception as e:
         logger.error(f"Error al enviar correo '{asunto}' a {destinatarios}: {e}")
         # No re-lanzamos la excepción para evitar error 500
