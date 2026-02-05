@@ -12,8 +12,8 @@ User = get_user_model()
 
 # Lista local de destinatarios (puedes moverla a settings si lo prefieres)
 EMAIL_RECIPIENTS = [
-    'kramosv@inacap.cl',
-    'kassramosveg@gmail.com',
+    'wtapia@inacap.cl',
+    'hleris@inacap.cl',
 ]
 
 class CustomLoginView(LoginView):
