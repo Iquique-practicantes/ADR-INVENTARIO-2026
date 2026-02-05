@@ -1612,35 +1612,18 @@ class DeleteToEliminadosView(LoginRequiredMixin, UserPassesTestMixin, View):
                     print("DEBUG: Intentando enviar correo de notificación de eliminación.") # Debug print
                     try:
                         print("DEBUG: Llamando a enviar_notificacion_asunto.") # Debug print
-                        # Configurar conexión SMTP explícita para asegurar envío
-                        from django.core.mail import get_connection
-                        from decouple import config
-                        
-                        connection = get_connection(
-                            backend='django.core.mail.backends.smtp.EmailBackend',
-                            host='smtp.gmail.com',
-                            port=587,
-                            username=config('EMAIL_HOST_USER'),
-                            password=config('EMAIL_HOST_PASSWORD'),
-                            use_tls=True
-                        )
-                        
-                        print("DEBUG: Enviando correo con conexión explícita.")
-                        send_mail(
-                            subject=f"Registro Movido a Eliminados - {modelo}",
-                            message=mensaje,
-                            from_email=config('EMAIL_HOST_USER'),
-                            recipient_list=settings.EMAIL_RECIPIENTS,
-                            connection=connection,
-                            fail_silently=False
+                        enviar_notificacion_asunto(
+                            asunto=f"Registro Movido a Eliminados - {modelo}",
+                            mensaje=mensaje,
+                            destinatarios=settings.EMAIL_RECIPIENTS
                         )
                         print("DEBUG: Correo enviado exitosamente.")
                         print("DEBUG: Llamada a enviar_notificacion_asunto completada.") # Debug print
-                        messages.success(request, f'{model_name.title()} movido correctamente a la tabla de Eliminados y correo enviado.')
+                        messages.success(request, f'{model_name.title()} movido correctamente a la tabla de Eliminados.')
                     except Exception as e:
                         print(f"DEBUG: Error capturado al enviar correo: {str(e)}") # Debug print
                         logger.error(f'Error al enviar el correo de notificación: {str(e)}')
-                        messages.error(request, f'Error al enviar el correo de notificación: {str(e)}')
+                        messages.warning(request, f'{model_name.title()} movido a Eliminados pero hubo un error al enviar la notificación.')
 
                 else:
                     raise IntegrityError("Error al guardar en la tabla de Eliminados")
