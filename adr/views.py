@@ -109,9 +109,16 @@ def my_profile(request):
         elif "save_photo" in request.POST:
             pform = ProfileImageForm(request.POST, request.FILES, instance=profile)
             if pform.is_valid():
-                pform.save()
-                messages.success(request, "Tu foto de perfil fue actualizada.")
-                return redirect("my_profile")
+                try:
+                    pform.save()
+                    messages.success(request, "Tu foto de perfil fue actualizada.")
+                    return redirect("my_profile")
+                except Exception as e:
+                    # Log detallado del error para diagnóstico
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Error al guardar foto de perfil: {str(e)}", exc_info=True)
+                    messages.error(request, f"Error al subir la foto: {str(e)}")
             else:
                 messages.error(request, "No se pudo actualizar la foto. Revisa el archivo.")
 

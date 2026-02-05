@@ -129,12 +129,37 @@ class ProfileImageForm(forms.ModelForm):
         profile = super().save(commit=False)
         f = self.cleaned_data.get("image")
         if f:
-            # Procesa a cuadrado de 512 (calidad alta) y guarda como WEBP
-            processed = make_avatar_square(f, size=512, fmt="WEBP", quality=86)
-            profile.image.save(processed.name, processed, save=False)
+            try:
+                # Procesa a cuadrado de 512 (calidad alta) y guarda como WEBP
+                processed = make_avatar_square(f, size=512, fmt="WEBP", quality=86)
+                profile.image.save(processed.name, processed, save=False)
+            except Exception as e:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Error procesando imagen: {str(e)}", exc_info=True)
+                # Re-lanzar el error para que sea manejado en la vista
+                raise forms.ValidationError(
+                    f"Error al procesar la imagen: {str(e)}. "
+                    "Verifica tu conexión y las credenciales de Cloudinary."
+                )
 
         if commit:
-            profile.save(update_fields=["image"])
+            try:
+                profile.save(update_fields=["image"])
+            except Exception as e:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Error guardando en Cloudinary: {str(e)}", exc_info=True)
+                # Proporcionar mensaje más específico según el error
+                error_msg = str(e)
+                if "quota" in error_msg.lower():
+                    raise forms.ValidationError("Límite de almacenamiento de Cloudinary alcanzado.")
+                elif "unauthorized" in error_msg.lower() or "credentials" in error_msg.lower():
+                    raise forms.ValidationError("Error de autenticación con Cloudinary. Contacta al administrador.")
+                elif "timeout" in error_msg.lower():
+                    raise forms.ValidationError("Tiempo de espera agotado. Intenta con una imagen más pequeña.")
+                else:
+                    raise forms.ValidationError(f"Error al subir a Cloudinary: {error_msg}")
         return profile
 class LoginForm(AuthenticationForm):
     """Formulario de inicio de sesión"""
