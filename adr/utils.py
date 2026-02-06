@@ -36,22 +36,29 @@ def make_avatar_square(django_file, size=512, fmt="WEBP", quality=86):
 
 def enviar_notificacion_asunto(asunto: str, mensaje: str, destinatarios: list[str], from_email: str | None = None):
     """
-    Envía un correo en TEXTO PLANO.
-    Si falla, registra el error pero no detiene la operación.
-    Usa fail_silently=True para evitar bloquear el worker de Gunicorn.
+    Envía un correo en TEXTO PLANO en segundo plano (threading).
+    No bloquea la operación principal y evita timeouts de Gunicorn.
     """
     import logging
+    import threading
+    
     logger = logging.getLogger(__name__)
     
-    try:
-        send_mail(
-            subject=asunto,
-            message=mensaje,
-            from_email=from_email or getattr(settings, "DEFAULT_FROM_EMAIL", None),
-            recipient_list=destinatarios,
-            fail_silently=True,  # IMPORTANTE: No bloquear si falla
-        )
-        logger.info(f"Correo enviado: {asunto} a {destinatarios}")
-    except Exception as e:
-        logger.error(f"Error al enviar correo '{asunto}' a {destinatarios}: {e}")
-        # No re-lanzamos la excepción para evitar error 500
+    def _enviar_en_background():
+        """Función interna que ejecuta el envío en un hilo separado"""
+        try:
+            send_mail(
+                subject=asunto,
+                message=mensaje,
+                from_email=from_email or getattr(settings, "DEFAULT_FROM_EMAIL", None),
+                recipient_list=destinatarios,
+                fail_silently=False,  # En el hilo podemos usar False para registrar errores
+            )
+            logger.info(f"✅ Correo enviado exitosamente: '{asunto}' a {destinatarios}")
+        except Exception as e:
+            logger.error(f"❌ Error al enviar correo '{asunto}' a {destinatarios}: {e}")
+    
+    # Iniciar el hilo para enviar el correo sin bloquear
+    thread = threading.Thread(target=_enviar_en_background, daemon=True)
+    thread.start()
+    logger.info(f"📧 Correo programado para envío en segundo plano: '{asunto}'")
