@@ -36,25 +36,46 @@ def make_avatar_square(django_file, size=512, fmt="WEBP", quality=86):
 
 def enviar_notificacion_asunto(asunto: str, mensaje: str, destinatarios: list[str], from_email: str | None = None):
     """
-    Envía un correo en TEXTO PLANO en segundo plano (threading).
+    Envía un correo usando SendGrid HTTP API en segundo plano.
     No bloquea la operación principal y evita timeouts de Gunicorn.
     """
     import logging
     import threading
+    from decouple import config
     
     logger = logging.getLogger(__name__)
     
     def _enviar_en_background():
-        """Función interna que ejecuta el envío en un hilo separado"""
+        """Función interna que ejecuta el envío en un hilo separado usando SendGrid API"""
         try:
-            send_mail(
+            from sendgrid import SendGridAPIClient
+            from sendgrid.helpers.mail import Mail, To
+            
+            # Obtener configuración
+            api_key = config('SENDGRID_API_KEY', default='')
+            sender_email = from_email or config('EMAIL_FROM', default='iquiquepracticantes@gmail.com')
+            
+            if not api_key:
+                logger.error("❌ SENDGRID_API_KEY no está configurada")
+                return
+            
+            # Crear el mensaje
+            message = Mail(
+                from_email=sender_email,
+                to_emails=[To(email) for email in destinatarios],
                 subject=asunto,
-                message=mensaje,
-                from_email=from_email or getattr(settings, "DEFAULT_FROM_EMAIL", None),
-                recipient_list=destinatarios,
-                fail_silently=False,  # En el hilo podemos usar False para registrar errores
+                plain_text_content=mensaje
             )
-            logger.info(f"✅ Correo enviado exitosamente: '{asunto}' a {destinatarios}")
+            
+            # Enviar usando la API HTTP
+            sg = SendGridAPIClient(api_key)
+            response = sg.send(message)
+            
+            if response.status_code in [200, 201, 202]:
+                logger.info(f"✅ Correo enviado exitosamente: '{asunto}' a {destinatarios}")
+            else:
+                logger.error(f"❌ Error SendGrid (código {response.status_code}): {response.body}")
+                
         except Exception as e:
             logger.error(f"❌ Error al enviar correo '{asunto}' a {destinatarios}: {e}")
     
