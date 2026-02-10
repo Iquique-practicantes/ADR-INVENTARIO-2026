@@ -225,16 +225,16 @@ if DEBUG:
     # En desarrollo, imprime el correo en la terminal y evita timeouts SMTP
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 else:
-    # Producción: Usar SendGrid (funciona desde Render)
+    # Producción: Usar Gmail SMTP
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = 'smtp.sendgrid.net'
+    EMAIL_HOST = 'smtp.gmail.com'
     EMAIL_PORT = 587
     EMAIL_USE_TLS = True
     EMAIL_USE_SSL = False
     EMAIL_TIMEOUT = 30
-    EMAIL_HOST_USER = 'apikey'  # Siempre es "apikey" para SendGrid
-    EMAIL_HOST_PASSWORD = config('SENDGRID_API_KEY')  # La API Key de SendGrid
-    DEFAULT_FROM_EMAIL = config('EMAIL_FROM', default='iquiquepracticantes@gmail.com')
+    EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='iquiquepracticantes@gmail.com')
+    EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+    DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
     SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 
