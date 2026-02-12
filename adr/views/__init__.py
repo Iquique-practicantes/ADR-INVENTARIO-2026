@@ -4,8 +4,9 @@ Paquete de vistas del módulo ADR.
 Este paquete organiza las vistas en módulos especializados:
 - base: Vistas genéricas reutilizables
 - equipos: CRUD de equipos refactorizados (TODOS los modelos)
-- delete: Vistas de eliminación lógica y gestión de eliminados  
+- delete: Vistas de eliminación lógica y gestión de eliminados
 - historial: Vistas de historial de cambios
+- auth: Vistas de autenticación y perfil de usuario
 - views_legacy: Archivo original (temporalmente para backward compatibility)
 
 ESTRATEGIA INCREMENTAL:
@@ -108,4 +109,11 @@ from .historial import (
     HistorialCambiosView,
 )
 
-# Login, Profile, Excel, y otras vistas siguen viniendo de views_legacy.py
+# Sobrescribir vistas de autenticación y perfil
+from .auth import (
+    my_profile,
+    UserPasswordChangeView,
+    CustomPasswordResetView,
+)
+
+# Excel y otras vistas siguen viniendo de views_legacy.py
