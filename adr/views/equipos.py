@@ -317,7 +317,7 @@ class EquiposIslaDetailView(ActivoDetailView):
 class SwitchDeRedListView(ActivoListView):
     model = SwitchDeRed
     template_name = 'modulos/switch_de_red.html'
-    context_object_name = 'switches_de_red'
+    context_object_name = 'switch_de_red'  # Match legacy template expectations
 
 class SwitchDeRedCreateView(ActivoCreateView):
     model = SwitchDeRed
