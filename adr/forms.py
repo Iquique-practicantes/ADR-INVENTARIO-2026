@@ -3,23 +3,30 @@ forms.py - Archivo de formularios de la aplicación
 Contiene todos los formularios necesarios para manejar los diferentes modelos y funcionalidades
 """
 
+from datetime import datetime
+
 from django import forms
+from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, SetPasswordForm
 from django.contrib.auth.models import User
+from django.core.cache import cache
+from django.utils import timezone
+from PIL import Image
+
 from accounts.models import Profile
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import (
     AllInOne, AllInOneAdmins, Notebook, MiniPC,
-    Proyectores, BodegaADR, Azotea, Monitor, Audio, Tablet, EquiposIsla, SwitchDeRed, Televisor
+    Proyectores, BodegaADR, Azotea, Monitor, Audio, Tablet,
+    EquiposIsla, SwitchDeRed, Televisor, Profile,
 )
-from accounts.models import Profile
 from .opciones import (
-    opciones_sala_All_In_One, 
-    opciones_estado, 
+    opciones_sala_All_In_One,
+    opciones_estado,
     opciones_marca_all_in_one,
     opciones_ubicacion_all_in_one_admin,
-    opciones_marca_notebook,  # Añadimos esta importación
+    opciones_marca_notebook,
     opciones_ubicacion_notebook,
-    opciones_marca_mini_pc,  # Asegúrate de que exista en opciones.py
+    opciones_marca_mini_pc,
     opciones_ubicacion_mini_pc,
     opciones_marca_proyector,
     opciones_activos,
@@ -27,25 +34,12 @@ from .opciones import (
     opciones_ubicacion_proyector,
     opciones_estado_activo,
     opciones_edificio,
-    opciones_marca_monitor, opciones_ubicacion_monitor # Opciones para Monitor
-) # Eliminado opciones_ubicacion_tablet y opciones_marca_tablet
-from django import forms
-from PIL import Image
-from .models import Profile
+    opciones_marca_monitor,
+    opciones_ubicacion_monitor,
+)
 from .utils import make_avatar_square
-from django import forms
-from django.contrib.auth.forms import AuthenticationForm
-from django.core.cache import cache
-from django.utils import timezone
-from datetime import datetime
-from django.contrib.auth import get_user_model
-from django import forms
-from django.contrib.auth.forms import SetPasswordForm
-from django.core.cache import cache
 
 
-
-# Copiamos la misma función para evitar dependencias cruzadas
 def _lock_key(username=None, ip=None):
     return f"login_lock:{username or 'unknown'}:{ip or 'unknown'}"
 class UserUpdateForm(forms.ModelForm):

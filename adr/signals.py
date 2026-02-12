@@ -3,7 +3,8 @@ from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from adr.models import (
     HistorialCambios, AllInOne, Notebook, MiniPC, Proyectores,
-    BodegaADR, Azotea, AllInOneAdmins, EquiposIsla, SwitchDeRed
+    BodegaADR, Azotea, AllInOneAdmins, EquiposIsla, SwitchDeRed,
+    Monitor, Audio, Tablet, Televisor,
 )
 from accounts.models import Profile
 from adr.middleware import get_current_user
@@ -15,6 +16,7 @@ from django.core.cache import cache
 from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth import get_user_model
+
 # ---------------------------------------------------------------------
 # 1) HISTORIAL DE CAMBIOS
 # ---------------------------------------------------------------------
@@ -27,6 +29,10 @@ from django.contrib.auth import get_user_model
 @receiver(pre_save, sender=Azotea)
 @receiver(pre_save, sender=EquiposIsla)
 @receiver(pre_save, sender=SwitchDeRed)
+@receiver(pre_save, sender=Monitor)
+@receiver(pre_save, sender=Audio)
+@receiver(pre_save, sender=Tablet)
+@receiver(pre_save, sender=Televisor)
 def registrar_cambios(sender, instance, **kwargs):
     try:
         original_instance = sender.objects.get(pk=instance.pk)

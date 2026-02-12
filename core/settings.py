@@ -17,10 +17,6 @@ from decouple import config
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-    
-# mysql://root:vRNcUFfkHCEgbUbxXaYROykNPwJtIdOG@autorack.proxy.rlwy.net:19834/railway
-
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -164,9 +160,7 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-#Manejo de Imagenes
-# Al final del archivo settings.py
-# Definimos la carpeta Media files
+# Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
@@ -182,8 +176,6 @@ cloudinary.config(
     secure=True
 )
 
-# Usar Cloudinary como backend de almacenamiento para archivos media
-# Usar Cloudinary como backend de almacenamiento para archivos media
 # Django 5.x usa STORAGES en lugar de DEFAULT_FILE_STORAGE
 STORAGES = {
     "default": {
@@ -212,7 +204,7 @@ LOGGING = {
     },
     'root': {
         'handlers': ['console'],
-        'level': 'DEBUG',
+        'level': 'DEBUG' if DEBUG else 'WARNING',
     },
 }
 
