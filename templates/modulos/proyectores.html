@@ -51,8 +51,10 @@
 
       {# Derecha: botones verdes alineados #}
       {% if proyectores or page_obj %}
-      <div class="flex gap-3 md:ml-6 shrink-0">        {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' %}
-        <a href="{% url 'add_proyector' %}" class="inline-flex items-center justify-center px-4 h-10 rounded bg-gradient-to-br from-red-600 to-red-900 hover:from-red-500 hover:to-red-700 text-white shadow-sm">
+      <div class="flex gap-3 md:ml-6 shrink-0"> {% if group_name_singular == 'ADR' or group_name_singular == 'Operador
+        ADR' %}
+        <a href="{% url 'add_proyector' %}"
+          class="inline-flex items-center justify-center px-4 h-10 rounded bg-gradient-to-br from-red-600 to-red-900 hover:from-red-500 hover:to-red-700 text-white shadow-sm">
           <i class="fas fa-plus"></i> Agregar Activo
         </a>
         {% endif %}
@@ -191,9 +193,18 @@
         <tbody class="divide-y divide-gray-200 text-sm">
           {% for p in items %}
           <tr class="hover:bg-gray-50 align-top">
-            <td class="px-1 py-1 text-center text-gray-600 font-mono text-xs">{{ forloop.counter0|add:page_obj.start_index }}</td>
+            <td class="px-1 py-1 text-center text-gray-600 font-mono text-xs">{{
+              forloop.counter0|add:page_obj.start_index }}</td>
             <td class="px-1 py-1 break-words text-center">{{ p.activo|capfirst }}</td>
-            <td class="px-1 py-1 break-words text-center">{{ p.estado|capfirst }}</td>
+            <td class="px-1 py-1 text-center">
+              {% if p.estado == 'Operativo' %}
+              <span class="px-1 py-0.5 bg-green-100 text-green-800 rounded-full text-xs">Operativo</span>
+              {% elif p.estado == 'Dañado' %}
+              <span class="px-1 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-xs">Dañado</span>
+              {% else %}
+              <span class="px-1 py-0.5 bg-red-100 text-red-800 rounded-full text-xs">De Baja</span>
+              {% endif %}
+            </td>
             <td class="px-1 py-1 break-words text-center">{{ p.marca|capfirst }}</td>
             <td class="px-1 py-1 break-words text-center">{{ p.modelo|capfirst }}</td>
             <td class="px-1 py-1 break-words text-center">{{ p.n_serie }}</td>
@@ -202,7 +213,8 @@
             <td class="px-1 py-1 break-words text-center">{{ p.netbios|capfirst }}</td>
             <td class="px-1 py-1 break-words text-center">{{ p.ubicacion }}</td>
             <td class="px-1 py-1 break-words text-center">
-              {% if p.creado_por %}{{ p.creado_por.get_full_name|default:p.creado_por.username }}{% else %}N/A{% endif %}
+              {% if p.creado_por %}{{ p.creado_por.get_full_name|default:p.creado_por.username }}{% else %}N/A{% endif
+              %}
             </td>
             <td class="px-1 py-1 break-words text-center">{{ p.fecha_creacion|date:"d/m/Y" }}</td>
             <td class="px-1 py-1 break-words text-center">{{ p.fecha_modificacion|date:"d/m/Y" }}</td>

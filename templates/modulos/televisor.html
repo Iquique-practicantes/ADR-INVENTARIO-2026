@@ -142,35 +142,43 @@
                     <dd class="text-gray-800">{{ a.fecha_creacion|date:"d/m/Y" }}</dd>
                 </div>
                 <div class="col-span-2 flex justify-end gap-2 mt-2">
-                     {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' or group_name_singular == 'Auxiliares Operador ADR' %}
+                    {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' or group_name_singular
+                    == 'Auxiliares Operador ADR' %}
                     <!-- View -->
                     <a href="{% url 'detalle_televisor' a.pk %}"
-                       class="inline-flex items-center justify-center w-8 h-8 rounded-full text-white bg-gradient-to-br from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 shadow-md"
-                       title="Ver">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 12s4.5-7 10-7 10 7 10 7-4.5 7-10 7-10-7-10-7z" />
-                           <circle cx="12" cy="12" r="3"></circle>
+                        class="inline-flex items-center justify-center w-8 h-8 rounded-full text-white bg-gradient-to-br from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 shadow-md"
+                        title="Ver">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M2 12s4.5-7 10-7 10 7 10 7-4.5 7-10 7-10-7-10-7z" />
+                            <circle cx="12" cy="12" r="3"></circle>
                         </svg>
                     </a>
                     <!-- Edit -->
                     <a href="{% url 'edit_televisor' a.pk %}"
-                       class="inline-flex items-center justify-center w-8 h-8 rounded-full text-white bg-gradient-to-br from-amber-500 to-amber-700 hover:from-amber-600 hover:to-amber-800 shadow-md"
-                       title="Editar">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536L9 18H5.5V14.5z" />
+                        class="inline-flex items-center justify-center w-8 h-8 rounded-full text-white bg-gradient-to-br from-amber-500 to-amber-700 hover:from-amber-600 hover:to-amber-800 shadow-md"
+                        title="Editar">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15.232 5.232l3.536 3.536L9 18H5.5V14.5z" />
                         </svg>
                     </a>
                     {% endif %}
                     {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' %}
                     <!-- Delete -->
                     <form action="{% url 'delete_televisor' 'televisor' a.pk %}" method="post"
-                          onsubmit="return confirm('¿Está seguro que desea eliminar este registro?');" style="display:inline;">
+                        onsubmit="return confirm('¿Está seguro que desea eliminar este registro?');"
+                        style="display:inline;">
                         {% csrf_token %}
                         <button type="submit"
-                                class="inline-flex items-center justify-center w-8 h-8 rounded-full text-white bg-gradient-to-br from-rose-600 to-rose-800 hover:from-rose-700 hover:to-rose-900 shadow-md"
-                                title="Eliminar">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0H7" />
+                            class="inline-flex items-center justify-center w-8 h-8 rounded-full text-white bg-gradient-to-br from-rose-600 to-rose-800 hover:from-rose-700 hover:to-rose-900 shadow-md"
+                            title="Eliminar">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0H7" />
                             </svg>
                         </button>
                     </form>
@@ -189,17 +197,18 @@
                     <tr>
                         <th class="px-2 py-3 text-center w-12">#</th>
                         <th class="px-2 py-3 text-center">Activo</th>
+                        <th class="px-2 py-3 text-center">Estado</th>
                         <th class="px-2 py-3 text-center">Marca</th>
                         <th class="px-2 py-3 text-center">Modelo</th>
                         <th class="px-2 py-3 text-center">N° Serie</th>
                         <th class="px-2 py-3 text-center">Etiqueta</th>
                         <th class="px-2 py-3 text-center">BDO</th>
-                        <th class="px-2 py-3 text-center">Estado</th>
                         <th class="px-2 py-3 text-center">Ubicación</th>
                         <th class="px-2 py-3 text-center">Registrado por</th>
                         <th class="px-2 py-3 text-center">Fecha Creación</th>
                         <th class="px-2 py-3 text-center">Fecha Modificación</th>
-                        {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' or group_name_singular == 'Auxiliares Operador ADR' %}
+                        {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' or
+                        group_name_singular == 'Auxiliares Operador ADR' %}
                         <th class="px-2 py-3 text-center">Acciones</th>
                         {% endif %}
                     </tr>
@@ -207,14 +216,23 @@
                 <tbody class="divide-y divide-gray-200 text-sm">
                     {% for a in items %}
                     <tr class="hover:bg-gray-50 align-top">
-                        <td class="px-1 py-1 text-center text-gray-600 font-mono text-xs">{{ forloop.counter0|add:page_obj.start_index }}</td>
+                        <td class="px-1 py-1 text-center text-gray-600 font-mono text-xs">{{
+                            forloop.counter0|add:page_obj.start_index }}</td>
                         <td class="px-1 py-1 break-words text-center">{{ a.activo|capfirst }}</td>
+                        <td class="px-1 py-1 text-center">
+                            {% if a.estado == 'Operativo' %}
+                            <span class="px-1 py-0.5 bg-green-100 text-green-800 rounded-full text-xs">Operativo</span>
+                            {% elif a.estado == 'Dañado' %}
+                            <span class="px-1 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-xs">Dañado</span>
+                            {% else %}
+                            <span class="px-1 py-0.5 bg-red-100 text-red-800 rounded-full text-xs">De Baja</span>
+                            {% endif %}
+                        </td>
                         <td class="px-1 py-1 break-words text-center">{{ a.marca|capfirst }}</td>
                         <td class="px-1 py-1 break-words text-center">{{ a.modelo|capfirst }}</td>
                         <td class="px-1 py-1 break-words text-center">{{ a.n_serie }}</td>
                         <td class="px-1 py-1 break-words text-center">{{ a.etiqueta }}</td>
                         <td class="px-1 py-1 break-words text-center">{{ a.bdo }}</td>
-                        <td class="px-1 py-1 break-words text-center">{{ a.estado|capfirst }}</td>
                         <td class="px-1 py-1 break-words text-center">{{ a.ubicacion|capfirst }}</td>
                         <td class="px-1 py-1 break-words text-center">
                             {% if a.creado_por %}
@@ -225,34 +243,42 @@
                         </td>
                         <td class="px-1 py-1 break-words text-center">{{ a.fecha_creacion|date:"d/m/Y" }}</td>
                         <td class="px-1 py-1 break-words text-center">{{ a.fecha_modificacion|date:"d/m/Y" }}</td>
-                        {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' or group_name_singular == 'Auxiliares Operador ADR' %}
+                        {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' or
+                        group_name_singular == 'Auxiliares Operador ADR' %}
                         <td class="px-2 py-2 text-center">
                             <div class="flex items-center justify-center gap-2">
                                 <!-- View -->
                                 <a href="{% url 'detalle_televisor' a.pk %}"
-                                   class="inline-flex items-center justify-center w-8 h-8 rounded-full text-white bg-gradient-to-br from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 shadow-md"
-                                   title="Ver">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 12s4.5-7 10-7 10 7 10 7-4.5 7-10 7-10-7-10-7z" />
-                                       <circle cx="12" cy="12" r="3"></circle>
+                                    class="inline-flex items-center justify-center w-8 h-8 rounded-full text-white bg-gradient-to-br from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 shadow-md"
+                                    title="Ver">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M2 12s4.5-7 10-7 10 7 10 7-4.5 7-10 7-10-7-10-7z" />
+                                        <circle cx="12" cy="12" r="3"></circle>
                                     </svg>
                                 </a>
                                 <!-- Edit -->
                                 <a href="{% url 'edit_televisor' a.pk %}" title="Editar"
                                     class="inline-flex items-center justify-center w-8 h-8 rounded-full text-white bg-gradient-to-br from-amber-500 to-amber-700 hover:from-amber-600 hover:to-amber-800 shadow-md">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536L9 18H5.5V14.5z" />
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15.232 5.232l3.536 3.536L9 18H5.5V14.5z" />
                                     </svg>
                                 </a>
                                 {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' %}
                                 <!-- Delete -->
                                 <form action="{% url 'delete_televisor' 'televisor' a.pk %}" method="post"
-                                      onsubmit="return confirm('¿Está seguro que desea eliminar este registro?');" style="display:inline;">
+                                    onsubmit="return confirm('¿Está seguro que desea eliminar este registro?');"
+                                    style="display:inline;">
                                     {% csrf_token %}
                                     <button type="submit" title="Eliminar"
                                         class="inline-flex items-center justify-center w-8 h-8 rounded-full text-white bg-gradient-to-br from-rose-600 to-rose-800 hover:from-rose-700 hover:to-rose-900 shadow-md">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0H7" />
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0H7" />
                                         </svg>
                                     </button>
                                 </form>

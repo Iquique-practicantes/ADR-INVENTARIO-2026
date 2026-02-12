@@ -188,12 +188,12 @@
           <tr>
             <th class="px-2 py-3 text-center w-12">#</th>
             <th class="px-2 py-3 text-center">Activo</th>
+            <th class="px-2 py-3 text-center">Estado</th>
             <th class="px-2 py-3 text-center">Marca</th>
             <th class="px-2 py-3 text-center">Modelo</th>
             <th class="px-2 py-3 text-center">N° Serie</th>
             <th class="px-2 py-3 text-center">Etiqueta</th>
             <th class="px-2 py-3 text-center">BDO</th>
-            <th class="px-2 py-3 text-center">Estado</th>
             <th class="px-2 py-3 text-center">NetBIOS</th>
             <th class="px-2 py-3 text-center">Ubicación</th>
             <th class="px-2 py-3 text-center">Registrado por</th>
@@ -209,12 +209,20 @@
           <tr class="hover:bg-gray-50 align-top">
             <td class="px-1 py-1 text-center text-gray-600 font-mono text-xs">{{ forloop.counter0|add:page_obj.start_index }}</td>
             <td class="px-1 py-1 break-words text-center">{{ a.activo|capfirst }}</td>
+            <td class="px-1 py-1 text-center">
+              {% if a.estado == 'Operativo' %}
+              <span class="px-1 py-0.5 bg-green-100 text-green-800 rounded-full text-xs">Operativo</span>
+              {% elif a.estado == 'Dañado' %}
+              <span class="px-1 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-xs">Dañado</span>
+              {% else %}
+              <span class="px-1 py-0.5 bg-red-100 text-red-800 rounded-full text-xs">De Baja</span>
+              {% endif %}
+            </td>
             <td class="px-1 py-1 break-words text-center">{{ a.marca|capfirst }}</td>
             <td class="px-1 py-1 break-words text-center">{{ a.modelo|capfirst }}</td>
             <td class="px-1 py-1 break-words text-center">{{ a.n_serie }}</td>
             <td class="px-1 py-1 break-words text-center">{{ a.etiqueta }}</td>
             <td class="px-1 py-1 break-words text-center">{{ a.bdo }}</td>
-            <td class="px-1 py-1 break-words text-center">{{ a.estado|capfirst }}</td>
             <td class="px-1 py-1 break-words text-center">{{ a.netbios }}</td>
             <td class="px-1 py-1 break-words text-center">{{ a.ubicacion|capfirst }}</td>
             <td class="px-1 py-1 break-words text-center">

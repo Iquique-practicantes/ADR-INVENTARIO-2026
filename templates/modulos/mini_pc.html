@@ -48,8 +48,9 @@
 
       {# Acciones Excel #}
       {% if minis_pcs or page_obj %}
-      <div class="flex gap-3 md:ml-auto">        {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' %}
-        <a href="{% url 'add_mini_pc' %}" class="inline-flex items-center justify-center px-4 h-10 rounded bg-gradient-to-br from-red-600 to-red-900 hover:from-red-500 hover:to-red-700 text-white shadow-sm">
+      <div class="flex gap-3 md:ml-auto"> {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' %}
+        <a href="{% url 'add_mini_pc' %}"
+          class="inline-flex items-center justify-center px-4 h-10 rounded bg-gradient-to-br from-red-600 to-red-900 hover:from-red-500 hover:to-red-700 text-white shadow-sm">
           <i class="fas fa-plus"></i> Agregar Activo
         </a>
         {% endif %}
@@ -196,9 +197,18 @@
         <tbody class="divide-y divide-gray-200 text-sm">
           {% for m in items %}
           <tr class="hover:bg-gray-50 align-top">
-            <td class="px-1 py-1 text-center text-gray-600 font-mono text-xs">{{ forloop.counter0|add:page_obj.start_index }}</td>
+            <td class="px-1 py-1 text-center text-gray-600 font-mono text-xs">{{
+              forloop.counter0|add:page_obj.start_index }}</td>
             <td class="px-1 py-1 break-words text-center">{{ m.activo|capfirst }}</td>
-            <td class="px-1 py-1 break-words text-center">{{ m.estado|capfirst }}</td>
+            <td class="px-1 py-1 text-center">
+              {% if m.estado == 'Operativo' %}
+              <span class="px-1 py-0.5 bg-green-100 text-green-800 rounded-full text-xs">Operativo</span>
+              {% elif m.estado == 'Dañado' %}
+              <span class="px-1 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-xs">Dañado</span>
+              {% else %}
+              <span class="px-1 py-0.5 bg-red-100 text-red-800 rounded-full text-xs">De Baja</span>
+              {% endif %}
+            </td>
             <td class="px-1 py-1 break-words text-center">{{ m.marca|capfirst }}</td>
             <td class="px-1 py-1 break-words text-center">{{ m.modelo|capfirst }}</td>
             <td class="px-1 py-1 break-words text-center">{{ m.n_serie }}</td>

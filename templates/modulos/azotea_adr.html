@@ -218,7 +218,15 @@
                             {{ forloop.counter0|add:page_obj.start_index }}
                         </td>
                         <td class="px-1 py-1 break-words text-center">{{ a.activo|capfirst }}</td>
-                        <td class="px-1 py-1 break-words text-center">{{ a.estado|capfirst }}</td>
+                        <td class="px-1 py-1 text-center">
+                            {% if a.estado == 'Operativo' %}
+                            <span class="px-1 py-0.5 bg-green-100 text-green-800 rounded-full text-xs">Operativo</span>
+                            {% elif a.estado == 'Dañado' %}
+                            <span class="px-1 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-xs">Dañado</span>
+                            {% else %}
+                            <span class="px-1 py-0.5 bg-red-100 text-red-800 rounded-full text-xs">De Baja</span>
+                            {% endif %}
+                        </td>
                         <td class="px-1 py-1 break-words text-center">{{ a.marca|capfirst }}</td>
                         <td class="px-1 py-1 break-words text-center">{{ a.modelo|capfirst }}</td>
                         <td class="px-1 py-1 break-words text-center">{{ a.n_serie }}</td>
