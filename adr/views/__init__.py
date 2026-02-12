@@ -7,6 +7,7 @@ Este paquete organiza las vistas en módulos especializados:
 - delete: Vistas de eliminación lógica y gestión de eliminados
 - historial: Vistas de historial de cambios
 - auth: Vistas de autenticación y perfil de usuario
+- excel: Vistas de descarga de datos en Excel
 - views_legacy: Archivo original (temporalmente para backward compatibility)
 
 ESTRATEGIA INCREMENTAL:
@@ -116,4 +117,9 @@ from .auth import (
     CustomPasswordResetView,
 )
 
-# Excel y otras vistas siguen viniendo de views_legacy.py
+# Sobrescribir vistas de Excel
+from .excel import (
+    DescargarExcelView,
+)
+
+# Otras vistas siguen viniendo de views_legacy.py
