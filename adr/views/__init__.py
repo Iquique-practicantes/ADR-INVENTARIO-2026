@@ -16,8 +16,9 @@ ESTRATEGIA INCREMENTAL:
 3. urls.py sigue funcionando sin cambios
 """
 
-# Importar TODAS las vistas del archivo legacy para backward compatibility
-from adr.views_legacy import *
+# Importar vistas restantes (upload, users, utils) de views_other
+# NOTA: Este archivo contiene vistas especializadas aún no refactorizadas
+from adr.views_other import *
 
 # Sobrescribir con TODAS las vistas refactorizadas de equipos
 from .equipos import (
