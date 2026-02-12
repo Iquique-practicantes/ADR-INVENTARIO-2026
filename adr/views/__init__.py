@@ -4,6 +4,8 @@ Paquete de vistas del módulo ADR.
 Este paquete organiza las vistas en módulos especializados:
 - base: Vistas genéricas reutilizables
 - equipos: CRUD de equipos refactorizados (TODOS los modelos)
+- delete: Vistas de eliminación lógica y gestión de eliminados  
+- historial: Vistas de historial de cambios
 - views_legacy: Archivo original (temporalmente para backward compatibility)
 
 ESTRATEGIA INCREMENTAL:
@@ -95,5 +97,15 @@ from .equipos import (
     TelevisorDetailView,
 )
 
-# Todas las demás vistas (Login, Profile, Excel, Historial, etc.) 
-# siguen viniendo de views_legacy.py
+# Sobrescribir vistas de eliminación y eliminados
+from .delete import (
+    DeleteToEliminadosView,
+    EliminadosListView,
+)
+
+# Sobrescribir vista de historial
+from .historial import (
+    HistorialCambiosView,
+)
+
+# Login, Profile, Excel, y otras vistas siguen viniendo de views_legacy.py
