@@ -155,7 +155,7 @@ class ProyectorDetailView(ActivoDetailView):
 class BodegaADRListView(ActivoListView):
     model = BodegaADR
     template_name = 'modulos/bodega_adr.html'
-    context_object_name = 'bodega_adr'
+    context_object_name = 'bodegas_adr'  # Plural - requerido por template
 
 class BodegaADRCreateView(ActivoCreateView):
     model = BodegaADR
@@ -182,7 +182,7 @@ class BodegaADRDetailView(ActivoDetailView):
 class AzoteaListView(ActivoListView):
     model = Azotea
     template_name = 'modulos/azotea.html'
-    context_object_name = 'azoteas'
+    context_object_name = 'azoteas'  # Plural - requerido por template
 
 class AzoteaCreateView(ActivoCreateView):
     model = Azotea
