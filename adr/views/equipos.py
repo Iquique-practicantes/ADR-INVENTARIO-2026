@@ -181,8 +181,8 @@ class BodegaADRDetailView(ActivoDetailView):
 
 class AzoteaListView(ActivoListView):
     model = Azotea
-    template_name = 'modulos/azotea.html'
-    context_object_name = 'azoteas'  # Plural - requerido por template
+    template_name = 'modulos/azotea_adr.html'
+    context_object_name = 'azoteas_adr'  # Match original legacy views
 
 class AzoteaCreateView(ActivoCreateView):
     model = Azotea
