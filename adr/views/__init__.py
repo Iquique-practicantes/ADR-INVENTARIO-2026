@@ -1,0 +1,99 @@
+"""
+Paquete de vistas del módulo ADR.
+
+Este paquete organiza las vistas en módulos especializados:
+- base: Vistas genéricas reutilizables
+- equipos: CRUD de equipos refactorizados (TODOS los modelos)
+- views_legacy: Archivo original (temporalmente para backward compatibility)
+
+ESTRATEGIA INCREMENTAL:
+1. Importamos TODAS las vistas del archivo legacy
+2. Sobrescribimos con las vistas refactorizadas
+3. urls.py sigue funcionando sin cambios
+"""
+
+# Importar TODAS las vistas del archivo legacy para backward compatibility
+from adr.views_legacy import *
+
+# Sobrescribir con TODAS las vistas refactorizadas de equipos
+from .equipos import (
+    # AllInOne
+    AllInOneListView as AllInOneView,
+    AllInOneCreateView as Add_AllInOneView,
+    AllInOneUpdateView as Edit_AllInOneView,
+    AllInOneDetailView,
+    
+    # AllInOne Admins
+    AllInOneAdminListView as AllInOneAdminView,
+    AllInOneAdminCreateView as Add_AllInOneAdminView,
+    AllInOneAdminUpdateView as Edit_AllInOneAdmView,
+    
+    # Notebooks
+    NotebookListView as NotebooksView,
+    NotebookCreateView as AddNotebooksView,
+    NotebookUpdateView as EditNotebooksView,
+    NotebookDetailView,
+    
+    # MiniPC
+    MiniPCListView as MiniPCsView,
+    MiniPCCreateView as AddMiniPCView,
+    MiniPCUpdateView as EditMiniPCView,
+    MiniPCDetailView,
+    
+    # Proyectores
+    ProyectorListView as ProyectoresView,
+    ProyectorCreateView as AddProyectorView,
+    ProyectorUpdateView as EditProyectorView,
+    ProyectorDetailView,
+    
+    # Bodega ADR
+    BodegaADRListView as BodegaADRView,
+    BodegaADRCreateView as AddBodegaADRView,
+    BodegaADRUpdateView as EditBodegaADRView,
+    BodegaADRDetailView,
+    
+    # Azotea
+    AzoteaListView as AzoteaView,
+    AzoteaCreateView as AddAzoteaView,
+    AzoteaUpdateView as EditAzoteaView,
+    AzoteaDetailView,
+    
+    # Monitor
+    MonitorListView as MonitorView,
+    MonitorCreateView as AddMonitorView,
+    MonitorUpdateView as EditMonitorView,
+    MonitorDetailView,
+    
+    # Audio
+    AudioListView as AudioView,
+    AudioCreateView as AddAudioView,
+    AudioUpdateView as EditAudioView,
+    AudioDetailView,
+    
+    # Tablet
+    TabletListView as TabletView,
+    TabletCreateView as AddTabletView,
+    TabletUpdateView as EditTabletView,
+    TabletDetailView,
+    
+    # Equipos Isla
+    EquiposIslaListView as EquiposIslaView,
+    EquiposIslaCreateView as Add_EquiposIslaView,
+    EquiposIslaUpdateView as Edit_EquiposIslaView,
+    EquiposIslaDetailView,
+    
+    # Switch De Red
+    SwitchDeRedListView as SwitchDeRedView,
+    SwitchDeRedCreateView as Add_SwitchDeRedView,
+    SwitchDeRedUpdateView as Edit_SwitchDeRedView,
+    SwitchDeRedDetailView,
+    
+    # Televisor
+    TelevisorListView as TelevisorView,
+    TelevisorCreateView as AddTelevisorView,
+    TelevisorUpdateView as EditTelevisorView,
+    TelevisorDetailView,
+)
+
+# Todas las demás vistas (Login, Profile, Excel, Historial, etc.) 
+# siguen viniendo de views_legacy.py
