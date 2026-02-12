@@ -27,3 +27,17 @@ backups/
 # Temporary files
 ultimo_reporte.xlsx
 *.xlsx~
+
+# Fix/migration scripts (one-time use)
+add_*.py
+fix_*.py
+check_*.py
+clear_*.py
+find_*.py
+normalizar.py
+reorder_*.py
+simple_fix.py
+template_config.py
+test_cloud.py
+cleanup_*.py
+prepare_*.py
