@@ -302,8 +302,8 @@
             </table>
         </div>
 
-        <!-- Paginación desktop -->
-        {% include 'partials/pagination.html' %}
+        {# Paginación #}
+        {% include 'componentes/pagination.html' with add_url='add_azotea_adr' nombre_activo='Azotea ADR' %}
     </div>
 
     {% else %}

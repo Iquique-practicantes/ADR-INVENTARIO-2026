@@ -193,7 +193,8 @@
         <tbody class="divide-y divide-gray-200 text-sm">
           {% for p in items %}
           <tr class="hover:bg-gray-50 align-top">
-            <td class="px-1 py-1 text-center text-gray-600 font-mono text-xs">{{ forloop.counter0|add:page_obj.start_index }}</td>
+            <td class="px-1 py-1 text-center text-gray-600 font-mono text-xs">{{
+              forloop.counter0|add:page_obj.start_index }}</td>
             <td class="px-1 py-1 break-words text-center">{{ p.activo|capfirst }}</td>
             <td class="px-1 py-1 text-center">
               {% if p.estado == 'Operativo' %}
@@ -284,8 +285,6 @@
   {% endif %}
   {% endwith %}
 
-  {# Controles de Paginación #}
-  {% include "partials/pagination.html" %}
 </div>
 <script>
   function confirmClearProyectores() {
