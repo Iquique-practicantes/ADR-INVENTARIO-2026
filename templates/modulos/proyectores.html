@@ -51,8 +51,8 @@
 
       {# Derecha: botones verdes alineados #}
       {% if proyectores or page_obj %}
-      <div class="flex gap-3 md:ml-6 shrink-0"> {% if group_name_singular == 'ADR' or group_name_singular == 'Operador
-        ADR' %}
+      <div class="flex gap-3 md:ml-6 shrink-0">
+        {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' %}
         <a href="{% url 'add_proyector' %}"
           class="inline-flex items-center justify-center px-4 h-10 rounded bg-gradient-to-br from-red-600 to-red-900 hover:from-red-500 hover:to-red-700 text-white shadow-sm">
           <i class="fas fa-plus"></i> Agregar Activo
@@ -212,8 +212,7 @@
             <td class="px-1 py-1 break-words text-center">{{ p.netbios|capfirst }}</td>
             <td class="px-1 py-1 break-words text-center">{{ p.ubicacion }}</td>
             <td class="px-1 py-1 break-words text-center">
-              {% if p.creado_por %}{{ p.creado_por.get_full_name|default:p.creado_por.username }}{% else %}N/A{% endif
-              %}
+              {% if p.creado_por %}{{ p.creado_por.get_full_name|default:p.creado_por.username }}{% else %}N/A{% endif %}
             </td>
             <td class="px-1 py-1 break-words text-center">{{ p.fecha_creacion|date:"d/m/Y" }}</td>
             <td class="px-1 py-1 break-words text-center">{{ p.fecha_modificacion|date:"d/m/Y" }}</td>

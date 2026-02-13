@@ -142,8 +142,7 @@
                     <dd class="text-gray-800">{{ a.fecha_creacion|date:"d/m/Y" }}</dd>
                 </div>
                 <div class="col-span-2 flex justify-end gap-2 mt-2">
-                    {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' or group_name_singular
-                    == 'Auxiliares Operador ADR' %}
+                    {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' or group_name_singular == 'Auxiliares Operador ADR' %}
                     <!-- View -->
                     <a href="{% url 'detalle_televisor' a.pk %}"
                         class="inline-flex items-center justify-center w-8 h-8 rounded-full text-white bg-gradient-to-br from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 shadow-md"
@@ -207,8 +206,7 @@
                         <th class="px-2 py-3 text-center">Registrado por</th>
                         <th class="px-2 py-3 text-center">Fecha Creación</th>
                         <th class="px-2 py-3 text-center">Fecha Modificación</th>
-                        {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' or
-                        group_name_singular == 'Auxiliares Operador ADR' %}
+                        {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' or group_name_singular == 'Auxiliares Operador ADR' %}
                         <th class="px-2 py-3 text-center">Acciones</th>
                         {% endif %}
                     </tr>
@@ -242,8 +240,7 @@
                         </td>
                         <td class="px-1 py-1 break-words text-center">{{ a.fecha_creacion|date:"d/m/Y" }}</td>
                         <td class="px-1 py-1 break-words text-center">{{ a.fecha_modificacion|date:"d/m/Y" }}</td>
-                        {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' or
-                        group_name_singular == 'Auxiliares Operador ADR' %}
+                        {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' or group_name_singular == 'Auxiliares Operador ADR' %}
                         <td class="px-2 py-2 text-center">
                             <div class="flex items-center justify-center gap-2">
                                 <!-- View -->
