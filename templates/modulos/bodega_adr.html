@@ -181,7 +181,7 @@
   <!-- ===== Vista Escritorio ===== -->
   <div class="hidden md:block">
     <div class="relative overflow-x-auto rounded shadow ring-1 ring-black/5">
-      <table class="min-w-[1100px] w-full table-auto bg-white">
+      <table class="min-w-[1400px] w-full table-auto bg-white">
         <thead class="bg-red-600 text-white text-sm sticky top-0 z-0">
           <tr>
             <th class="px-2 py-3 text-center w-12">#</th>
@@ -221,8 +221,7 @@
             <td class="px-1 py-1 text-center break-words">{{ b.bdo }}</td>
             <td class="px-1 py-1 text-center break-words">{{ b.netbios }}</td>
             <td class="px-1 py-1 text-center break-words">{{ b.ubicacion|capfirst }}</td>
-            <td class="px-1 py-1 text-center break-words">{{
-              b.creado_por.get_full_name|default:b.creado_por.username|default:"Admin" }}</td>
+            <td class="px-1 py-1 text-center break-words">{{ b.creado_por.get_full_name|default:b.creado_por.username|default:"Admin" }}</td>
             <td class="px-1 py-1 text-center break-words">{{ b.fecha_creacion|date:"d/m/Y" }}</td>
             <td class="px-1 py-1 text-center break-words">{{ b.fecha_modificacion|date:"d/m/Y" }}</td>
 
