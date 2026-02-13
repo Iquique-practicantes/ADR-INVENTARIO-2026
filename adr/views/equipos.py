@@ -127,8 +127,8 @@ class MiniPCDetailView(ActivoDetailView):
 
 class ProyectorListView(ActivoListView):
     model = Proyectores
-    template_name = 'modulos/proyector.html'
-    context_object_name = 'proyectores'
+    template_name = 'modulos/proyectores.html'
+    context_object_name = 'proyector'
 
 class ProyectorCreateView(ActivoCreateView):
     model = Proyectores
