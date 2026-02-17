@@ -198,23 +198,94 @@ class DescargarExcelView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         else:
             queryset = model_class.objects.all()
 
+        # ── Definición de columnas por modelo ──────────────────────
+        # Cada entrada: (header_excel, field_name_or_callable)
+        # 'field_name' se resolverá con getattr(obj, field_name)
+        # Si el valor es callable, se llamará con (obj, row_num)
+        base_columns = [
+            ('#',                  '_row_number'),
+            ('Activo',             'activo'),
+            ('Estado',             'estado'),
+            ('Marca',              'marca'),
+            ('Modelo',             'modelo'),
+            ('N° Serie',           'n_serie'),
+            ('Etiqueta',           'etiqueta'),
+            ('BDO',                'bdo'),
+            ('NetBios',            'netbios'),
+            ('Ubicación',          'ubicacion'),
+            ('Registrado por',     'creado_por'),
+            ('Fecha Creación',     'fecha_creacion'),
+            ('Fecha Modificación', 'fecha_modificacion'),
+        ]
+
+        # Modelos con campo asignado_a (Notebook, Monitor)
+        columns_asignado = [
+            ('#',                  '_row_number'),
+            ('Activo',             'activo'),
+            ('Estado',             'estado'),
+            ('Marca',              'marca'),
+            ('Modelo',             'modelo'),
+            ('N° Serie',           'n_serie'),
+            ('Etiqueta',           'etiqueta'),
+            ('BDO',                'bdo'),
+            ('NetBios',            'netbios'),
+            ('Ubicación',          'ubicacion'),
+            ('Asignado a',         'asignado_a'),
+            ('Registrado por',     'creado_por'),
+            ('Fecha Creación',     'fecha_creacion'),
+            ('Fecha Modificación', 'fecha_modificacion'),
+        ]
+
+        # Mapeo de modelo → columnas
+        column_mapping = {
+            'notebook':  columns_asignado,
+            'monitor':   columns_asignado,
+        }
+        # Eliminados e historial usan los campos genéricos del modelo
+        generic_models = {'eliminados', 'historialcambios'}
+
+        if model_name in generic_models:
+            # Comportamiento original para modelos especiales
+            columns_raw = [field.name for field in model_class._meta.fields]
+            columns = [(col.replace('_', ' ').title(), col) for col in columns_raw]
+        else:
+            columns = column_mapping.get(model_name, base_columns)
+
         # Crea el archivo Excel
         wb = Workbook()
         ws = wb.active
         ws.title = model_name.capitalize()
 
-        # Agrega encabezados basados en los campos del modelo
-        columns = [field.name for field in model_class._meta.fields]
-        for col_num, column_title in enumerate(columns, 1):
-            column_letter = get_column_letter(col_num)
-            ws[f"{column_letter}1"] = column_title.capitalize()
+        # Agrega encabezados
+        for col_num, (header, _) in enumerate(columns, 1):
+            ws[f"{get_column_letter(col_num)}1"] = header
 
-        # Rellena los datos de cada objeto del queryset en la hoja
-        for row_num, obj in enumerate(queryset, 2):  # Empieza desde la fila 2
-            for col_num, field_name in enumerate(columns, 1):
-                column_letter = get_column_letter(col_num)
-                field_value = getattr(obj, field_name)
-                ws[f"{column_letter}{row_num}"] = str(field_value) if field_value is not None else ''
+        # Rellena los datos
+        for row_num, obj in enumerate(queryset, 2):
+            for col_num, (header, field_name) in enumerate(columns, 1):
+                col_letter = get_column_letter(col_num)
+
+                if field_name == '_row_number':
+                    # Número secuencial (#)
+                    ws[f"{col_letter}{row_num}"] = row_num - 1
+                elif field_name == 'creado_por':
+                    # Resolver FK a nombre legible
+                    user = getattr(obj, 'creado_por', None)
+                    if user:
+                        name = user.get_full_name()
+                        ws[f"{col_letter}{row_num}"] = name if name.strip() else user.username
+                    else:
+                        ws[f"{col_letter}{row_num}"] = 'Admin'
+                elif field_name in ('fecha_creacion', 'fecha_modificacion'):
+                    # Formato de fecha legible
+                    val = getattr(obj, field_name, None)
+                    if val:
+                        ws[f"{col_letter}{row_num}"] = val.strftime('%d/%m/%Y')
+                    else:
+                        ws[f"{col_letter}{row_num}"] = ''
+                else:
+                    field_value = getattr(obj, field_name, None)
+                    ws[f"{col_letter}{row_num}"] = str(field_value) if field_value is not None else ''
 
         # Configura la respuesta HTTP para la descarga
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
