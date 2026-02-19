@@ -88,8 +88,8 @@ class AllInOne(EquipoInformatico):
     netbios = models.CharField(max_length=100, verbose_name='NetBIOS', null=True, blank=True)
 
     class Meta:
-        verbose_name = 'All In One'
-        verbose_name_plural = 'All In Ones'
+        verbose_name = 'All In One Académico'
+        verbose_name_plural = 'All In Ones Académicos'
         ordering = ['ubicacion', '-fecha_creacion']
 
     def get_absolute_url(self):
