@@ -107,22 +107,37 @@ class ActivoCreateView(UserPassesTestMixin, LoginRequiredMixin, CreateView):
         
         # Enviar notificación
         try:
-            model_verbose = self.model._meta.verbose_name
-            accion = f"Nuevo {model_verbose} Agregado"
-            mensaje = f"""
-El usuario {self.request.user.get_full_name()} ha agregado un nuevo {model_verbose}:
+            from adr.email_template import notificacion_equipo
 
-Acción: {accion}
-Activo: {instance.activo}
-Marca: {instance.marca}
-Modelo: {instance.modelo}
-N° Serie: {instance.n_serie}
-Ubicación: {instance.ubicacion}
-"""
+            model_verbose = self.model._meta.verbose_name
+            user = self.request.user
+            user_name = user.get_full_name() or user.username
+            user_group = user.groups.first().name if user.groups.exists() else 'Sin grupo'
+
+            datos = [
+                ('Activo', str(getattr(instance, 'activo', ''))),
+                ('Marca', str(getattr(instance, 'marca', ''))),
+                ('Modelo', str(getattr(instance, 'modelo', ''))),
+                ('N° Serie', str(getattr(instance, 'n_serie', ''))),
+                ('Etiqueta', str(getattr(instance, 'etiqueta', ''))),
+                ('BDO', str(getattr(instance, 'bdo', ''))),
+                ('Estado', str(getattr(instance, 'estado', ''))),
+                ('Ubicación', str(getattr(instance, 'ubicacion', ''))),
+            ]
+
+            html, plain = notificacion_equipo(
+                accion=f"Creación — Nuevo {model_verbose}",
+                usuario_nombre=user_name,
+                usuario_grupo=user_group,
+                modelo_nombre=str(model_verbose).title(),
+                datos_registro=datos,
+            )
+
             enviar_notificacion_asunto(
                 asunto=f"Nuevo {model_verbose} Registrado",
-                mensaje=mensaje,
-                destinatarios=getattr(settings, 'EMAIL_RECIPIENTS', [])
+                mensaje=plain,
+                destinatarios=getattr(settings, 'EMAIL_RECIPIENTS', []),
+                html_content=html,
             )
         except Exception as e:
             messages.warning(self.request, f'{model_verbose} creado, pero falló el envío de notificación: {str(e)}')
@@ -174,22 +189,37 @@ class ActivoUpdateView(UserPassesTestMixin, LoginRequiredMixin, UpdateView):
         
         # Enviar notificación
         try:
-            model_verbose = self.model._meta.verbose_name
-            accion = f"{model_verbose} Modificado"
-            mensaje = f"""
-El usuario {self.request.user.get_full_name()} ha modificado un {model_verbose}:
+            from adr.email_template import notificacion_equipo
 
-Acción: {accion}
-Activo: {instance.activo}
-Marca: {instance.marca}
-Modelo: {instance.modelo}
-N° Serie: {instance.n_serie}
-Ubicación: {instance.ubicacion}
-"""
+            model_verbose = self.model._meta.verbose_name
+            user = self.request.user
+            user_name = user.get_full_name() or user.username
+            user_group = user.groups.first().name if user.groups.exists() else 'Sin grupo'
+
+            datos = [
+                ('Activo', str(getattr(instance, 'activo', ''))),
+                ('Marca', str(getattr(instance, 'marca', ''))),
+                ('Modelo', str(getattr(instance, 'modelo', ''))),
+                ('N° Serie', str(getattr(instance, 'n_serie', ''))),
+                ('Etiqueta', str(getattr(instance, 'etiqueta', ''))),
+                ('BDO', str(getattr(instance, 'bdo', ''))),
+                ('Estado', str(getattr(instance, 'estado', ''))),
+                ('Ubicación', str(getattr(instance, 'ubicacion', ''))),
+            ]
+
+            html, plain = notificacion_equipo(
+                accion=f"Modificación — {model_verbose} Editado",
+                usuario_nombre=user_name,
+                usuario_grupo=user_group,
+                modelo_nombre=str(model_verbose).title(),
+                datos_registro=datos,
+            )
+
             enviar_notificacion_asunto(
                 asunto=f"{model_verbose} Modificado",
-                mensaje=mensaje,
-                destinatarios=getattr(settings, 'EMAIL_RECIPIENTS', [])
+                mensaje=plain,
+                destinatarios=getattr(settings, 'EMAIL_RECIPIENTS', []),
+                html_content=html,
             )
         except Exception as e:
             messages.warning(self.request, f'{model_verbose} actualizado, pero falló el envío de notificación: {str(e)}')

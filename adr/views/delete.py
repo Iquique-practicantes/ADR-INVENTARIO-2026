@@ -128,37 +128,43 @@ class DeleteToEliminadosView(LoginRequiredMixin, UserPassesTestMixin, View):
     def _enviar_notificacion(self, request, model_name, instance):
         """Envía notificación por correo de la eliminación"""
         try:
+            from adr.email_template import notificacion_equipo
+
             user = request.user
+            user_name = user.get_full_name() or user.username
             user_group = user.groups.first().name if user.groups.exists() else "Sin grupo"
 
-            mensaje = f"""
-            El usuario {user.get_full_name()} (Grupo: {user_group}) ha movido el siguiente registro a Eliminados:
+            datos = [
+                ('Activo', str(getattr(instance, 'activo', ''))),
+                ('Marca', str(getattr(instance, 'marca', ''))),
+                ('Modelo', str(getattr(instance, 'modelo', ''))),
+                ('N° Serie', str(getattr(instance, 'n_serie', ''))),
+                ('Etiqueta', str(getattr(instance, 'etiqueta', ''))),
+                ('BDO', str(getattr(instance, 'bdo', ''))),
+                ('Estado', str(getattr(instance, 'estado', ''))),
+                ('NetBIOS', str(getattr(instance, 'netbios', ''))),
+                ('Ubicación', str(getattr(instance, 'ubicacion', ''))),
+                ('Creado por', instance.creado_por.get_full_name() if getattr(instance, 'creado_por', None) else 'N/A'),
+                ('Fecha Creación', instance.fecha_creacion.strftime('%d/%m/%Y') if getattr(instance, 'fecha_creacion', None) else ''),
+                ('Fecha Modificación', instance.fecha_modificacion.strftime('%d/%m/%Y') if getattr(instance, 'fecha_modificacion', None) else ''),
+            ]
 
-            Modelo: {model_name.title()}
-            Datos del Registro:
-            - Activo: {instance.activo}
-            - Marca: {instance.marca}
-            - Modelo: {instance.modelo}
-            - N° Serie: {instance.n_serie}
-            - ETIQUETA: {instance.etiqueta}
-            - BDO: {instance.bdo}
-            - Estado: {instance.estado}
-            - Creado por: {instance.creado_por.get_full_name() if instance.creado_por else 'N/A'}
-            - Fecha Creación: {instance.fecha_creacion}
-            - Fecha Última Modificación: {instance.fecha_modificacion}
-            - NetBIOS: {getattr(instance, 'netbios', '')}
-            - Ubicación: {getattr(instance, 'ubicacion', '')}
-"""
+            if model_name in ('monitor', 'notebook'):
+                datos.append(('Asignado a', str(getattr(instance, 'asignado_a', 'N/A'))))
 
-            if model_name == 'monitor':
-                mensaje += f"""
-            - Asignado a: {getattr(instance, 'asignado_a', 'N/A')}
-"""
+            html, plain = notificacion_equipo(
+                accion=f"Eliminación — Movido a Eliminados",
+                usuario_nombre=user_name,
+                usuario_grupo=user_group,
+                modelo_nombre=model_name.replace('_', ' ').title(),
+                datos_registro=datos,
+            )
 
             enviar_notificacion_asunto(
-                asunto=f"Registro Movido a Eliminados - {model_name.title()}",
-                mensaje=mensaje,
-                destinatarios=settings.EMAIL_RECIPIENTS
+                asunto=f"Registro Movido a Eliminados — {model_name.replace('_', ' ').title()}",
+                mensaje=plain,
+                destinatarios=settings.EMAIL_RECIPIENTS,
+                html_content=html,
             )
         except Exception as e:
             logger.error(f'Error al enviar notificación de eliminación: {e}')

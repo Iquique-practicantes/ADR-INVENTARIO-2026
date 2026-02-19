@@ -109,17 +109,24 @@ def on_user_login_failed(sender, credentials, request, **kwargs):
 
         sent_key = _alert_key(username, ip)
         if not cache.get(sent_key):
-            subject = "ALERTA: 3 intentos fallidos de inicio de sesión"
-            now = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
-            body = (
-                f"Intentos fallidos: {count}\n"
-                f"Usuario: {username or '(vacío)'}\n"
-                f"IP: {ip or 'desconocida'}\n"
-                f"User-Agent: {ua}\n"
-                f"Fecha/Hora: {now}\n"
+            from adr.email_template import notificacion_alerta_login
+
+            now = timezone.now().strftime("%d/%m/%Y %H:%M:%S")
+            html, plain = notificacion_alerta_login(
+                intentos=count,
+                username=username,
+                ip=ip,
+                user_agent=ua,
+                fecha=now,
             )
-            send_mail(subject, body, settings.EMAIL_HOST_USER,
-                      getattr(settings, "EMAIL_RECIPIENTS", []), fail_silently=False)
+
+            from adr.utils import enviar_notificacion_asunto
+            enviar_notificacion_asunto(
+                asunto="ALERTA: 3 intentos fallidos de inicio de sesión",
+                mensaje=plain,
+                destinatarios=getattr(settings, "EMAIL_RECIPIENTS", []),
+                html_content=html,
+            )
             cache.set(sent_key, True, timeout=getattr(settings, "LOGIN_FAILED_WINDOW_SECONDS", 900))
 
 @receiver(user_logged_in)

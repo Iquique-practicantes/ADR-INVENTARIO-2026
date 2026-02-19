@@ -499,19 +499,26 @@ class AddUserView(UserPassesTestMixin, LoginRequiredMixin, CreateView):
 
             # 4) Notificación por correo (opcional)
             try:
-                accion = "Nuevo Usuario Agregado"
-                mensaje = f"""
-El usuario {self.request.user.get_full_name()} ha agregado un nuevo usuario al sistema.
+                from adr.email_template import notificacion_usuario
 
-Acción: {accion}
-Nombre Completo del Usuario Agregado: {user.first_name} {user.last_name}
-Nombre de Usuario: {user.username}
-Grupo Asignado: {group.name}
-"""
+                ejecutor = self.request.user.get_full_name() or self.request.user.username
+                datos = [
+                    ('Nombre Completo', f'{user.first_name} {user.last_name}'.strip() or '-'),
+                    ('Nombre de Usuario', user.username),
+                    ('Grupo Asignado', group.name),
+                ]
+
+                html, plain = notificacion_usuario(
+                    accion='Creación — Nuevo Usuario Agregado',
+                    ejecutor_nombre=ejecutor,
+                    datos_usuario=datos,
+                )
+
                 enviar_notificacion_asunto(
-                    asunto="Nuevo Usuario Registrado en el Sistema",
-                    mensaje=mensaje,
-                    destinatarios=getattr(settings, 'EMAIL_RECIPIENTS', [])
+                    asunto='Nuevo Usuario Registrado en el Sistema',
+                    mensaje=plain,
+                    destinatarios=getattr(settings, 'EMAIL_RECIPIENTS', []),
+                    html_content=html,
                 )
             except Exception as e:
                 # No detengas la creación por fallo de correo
@@ -639,21 +646,28 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
                 messages.error(request, 'Las contraseñas no coinciden. Por favor, intente nuevamente.')
 
             # Notificación por correo
-            accion = "Actualización de Perfil"
-            mensaje = f"""
-            El usuario {request.user.get_full_name()} ha actualizado el perfil de usuario.
-
-            Acción: {accion}
-            Nombre de Usuario Actualizado: {user.username}
-            Nombre Completo: {user.first_name} {user.last_name}
-            Grupo Asignado: {grupo_asignado}
-            Contraseña: {"Cambiada" if password_cambiada else "No Cambiada"}
-            """
             try:
+                from adr.email_template import notificacion_usuario
+
+                ejecutor = request.user.get_full_name() or request.user.username
+                datos = [
+                    ('Nombre de Usuario', user.username),
+                    ('Nombre Completo', f'{user.first_name} {user.last_name}'.strip() or '-'),
+                    ('Grupo Asignado', grupo_asignado),
+                    ('Contraseña', 'Cambiada' if password_cambiada else 'No Cambiada'),
+                ]
+
+                html, plain = notificacion_usuario(
+                    accion='Modificación — Perfil de Usuario Actualizado',
+                    ejecutor_nombre=ejecutor,
+                    datos_usuario=datos,
+                )
+
                 enviar_notificacion_asunto(
-                    asunto="Actualización de Perfil de Usuario",
-                    mensaje=mensaje,
-                    destinatarios=settings.EMAIL_RECIPIENTS
+                    asunto='Actualización de Perfil de Usuario',
+                    mensaje=plain,
+                    destinatarios=settings.EMAIL_RECIPIENTS,
+                    html_content=html,
                 )
             except Exception as e:
                 print(f"Error al enviar el correo de notificación: {str(e)}")
@@ -732,24 +746,31 @@ class ProfileDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
             # Eliminar el usuario
             self.object.delete()
 
-            # Preparar y enviar notificación (si hay destinatarios configurados)
-            accion = "Eliminación de Perfil"
-            mensaje = (
-                f"El usuario {request.user.get_full_name() or request.user.username} ha eliminado "
-                f"el siguiente perfil de usuario:\n\n"
-                f"Acción: {accion}\n"
-                f"Nombre de Usuario Eliminado: {nombre_usuario}\n"
-                f"Nombre Completo: {nombre_completo or '-'}\n"
-                f"Grupo Asignado: {grupo}\n"
-            )
+            # Preparar y enviar notificación HTML
+            try:
+                from adr.email_template import notificacion_usuario
 
-            # Puedes usar una lista en settings: EMAIL_RECIPIENTS = ["soporte@tudominio.cl", ...]
-            destinatarios = getattr(settings, "EMAIL_RECIPIENTS", None)
-            _enviar_notificacion(
-                asunto="Eliminación de Perfil de Usuario",
-                mensaje=mensaje,
-                destinatarios=destinatarios,
-            )
+                ejecutor = request.user.get_full_name() or request.user.username
+                datos = [
+                    ('Nombre de Usuario', nombre_usuario),
+                    ('Nombre Completo', nombre_completo or '-'),
+                    ('Grupo Asignado', grupo),
+                ]
+
+                html, plain = notificacion_usuario(
+                    accion='Eliminación de Perfil de Usuario',
+                    ejecutor_nombre=ejecutor,
+                    datos_usuario=datos,
+                )
+
+                enviar_notificacion_asunto(
+                    asunto='Eliminación de Perfil de Usuario',
+                    mensaje=plain,
+                    destinatarios=getattr(settings, 'EMAIL_RECIPIENTS', []),
+                    html_content=html,
+                )
+            except Exception:
+                pass  # No romper el flujo por fallo de correo
 
             messages.success(self.request, f'Usuario {nombre_usuario} eliminado exitosamente')
             return HttpResponseRedirect(self.get_success_url())
@@ -1500,29 +1521,41 @@ class ConfirmarRestauracionView(LoginRequiredMixin, UserPassesTestMixin, DetailV
             # Crear una nueva instancia del modelo con los datos restaurados
             restored_instance = model.objects.create(**datos_restauracion)
 
-            # Enviar notificación por correo
-            accion = "Restauración de Registro Eliminado"
-            modelo = registro.activo
-            mensaje = f"""
-            El usuario {request.user.get_full_name()} ha realizado la siguiente acción:
-            Acción: {accion}
-            Modelo: {modelo}
-            Datos Restaurados:
-            - Activo: {registro.activo}
-            - Marca: {registro.marca}
-            - Modelo: {registro.modelo}
-            - N° Serie: {registro.n_serie}
-            - etiqueta: {registro.etiqueta}
-            - BDO: {registro.bdo}
-            - NetBIOS: {registro.netbios if 'netbios' in campos_validos else 'No aplica'}
-            - Ubicación: {registro.ubicacion if 'ubicacion' in campos_validos else 'No aplica'}
-            """
+            # Enviar notificación HTML por correo
+            try:
+                from adr.email_template import notificacion_equipo
 
-            enviar_notificacion_asunto(
-                asunto="Restauración de Registro Eliminado",
-                mensaje=mensaje,
-                destinatarios=settings.EMAIL_RECIPIENTS
-            )
+                user = request.user
+                user_name = user.get_full_name() or user.username
+                user_group = user.groups.first().name if user.groups.exists() else 'Sin grupo'
+
+                datos = [
+                    ('Activo', str(registro.activo)),
+                    ('Marca', str(registro.marca)),
+                    ('Modelo', str(registro.modelo)),
+                    ('N° Serie', str(registro.n_serie)),
+                    ('Etiqueta', str(registro.etiqueta)),
+                    ('BDO', str(registro.bdo)),
+                    ('NetBIOS', str(registro.netbios) if 'netbios' in campos_validos else 'No aplica'),
+                    ('Ubicación', str(registro.ubicacion) if 'ubicacion' in campos_validos else 'No aplica'),
+                ]
+
+                html, plain = notificacion_equipo(
+                    accion='Restauración — Registro Restaurado',
+                    usuario_nombre=user_name,
+                    usuario_grupo=user_group,
+                    modelo_nombre=str(registro.activo).replace('_', ' ').title(),
+                    datos_registro=datos,
+                )
+
+                enviar_notificacion_asunto(
+                    asunto='Restauración de Registro Eliminado',
+                    mensaje=plain,
+                    destinatarios=settings.EMAIL_RECIPIENTS,
+                    html_content=html,
+                )
+            except Exception:
+                pass  # No romper el flujo por fallo de correo
 
             # Eliminar de la tabla Eliminados
             registro.delete()
@@ -4696,30 +4729,27 @@ class UploadExcelNotebookView(LoginRequiredMixin, UserPassesTestMixin, FormView)
     def enviar_notificacion_correo(self, excel_file, nuevos_registros):
         """Envía un correo electrónico con la notificación de carga masiva"""
         try:
-            accion = "Carga de datos masivos"
-            modelo = "Notebook"
-            mensaje = f"""
-            El usuario {self.request.user.get_full_name()} ha realizado la siguiente acción:
-            Acción: {accion}
-            Modelo: {modelo}
-            Registros nuevos añadidos: {nuevos_registros}
-            """
+            from adr.email_template import notificacion_carga_masiva
+
+            user_name = self.request.user.get_full_name() or self.request.user.username
+            html, plain = notificacion_carga_masiva(user_name, 'Notebook', nuevos_registros)
 
             email = EmailMessage(
-                subject="Carga de Datos Masivos en Notebook",
-                body=mensaje,
+                subject='Carga de Datos Masivos en Notebook',
+                body=plain,
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 to=settings.EMAIL_RECIPIENTS
             )
+            email.content_subtype = 'html'
+            email.body = html
 
-            # Adjuntar el archivo Excel subido
-            excel_file.seek(0)  # Asegurarse de que el archivo esté en el inicio
+            excel_file.seek(0)
             email.attach(excel_file.name, excel_file.read(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
             email.send()
-            logger.info("Correo de notificación enviado exitosamente.")
+            logger.info('Correo de notificación enviado exitosamente.')
         except Exception as e:
-            logger.error(f"Error al enviar correo de notificación: {str(e)}")
+            logger.error(f'Error al enviar correo de notificación: {str(e)}')
 
 
 logger = logging.getLogger(__name__)
@@ -4831,30 +4861,27 @@ class UploadExcelMiniPCView(LoginRequiredMixin, UserPassesTestMixin, FormView):
     def enviar_notificacion_correo(self, excel_file, nuevos_registros):
         """Envía un correo electrónico con la notificación de carga masiva"""
         try:
-            accion = "Carga de datos masivos"
-            modelo = "MiniPC"
-            mensaje = f"""
-            El usuario {self.request.user.get_full_name()} ha realizado la siguiente acción:
-            Acción: {accion}
-            Modelo: {modelo}
-            Registros nuevos añadidos: {nuevos_registros}
-            """
+            from adr.email_template import notificacion_carga_masiva
+
+            user_name = self.request.user.get_full_name() or self.request.user.username
+            html, plain = notificacion_carga_masiva(user_name, 'MiniPC', nuevos_registros)
 
             email = EmailMessage(
-                subject="Carga de Datos Masivos en MiniPC",
-                body=mensaje,
+                subject='Carga de Datos Masivos en MiniPC',
+                body=plain,
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 to=settings.EMAIL_RECIPIENTS
             )
+            email.content_subtype = 'html'
+            email.body = html
 
-            # Adjuntar el archivo Excel subido
-            excel_file.seek(0)  # Asegurarse de que el archivo esté en el inicio
+            excel_file.seek(0)
             email.attach(excel_file.name, excel_file.read(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
             email.send()
-            logger.info("Correo de notificación enviado exitosamente.")
+            logger.info('Correo de notificación enviado exitosamente.')
         except Exception as e:
-            logger.error(f"Error al enviar correo de notificación: {str(e)}")
+            logger.error(f'Error al enviar correo de notificación: {str(e)}')
 
 
 
@@ -4963,30 +4990,27 @@ class UploadExcelProyectorView(LoginRequiredMixin, UserPassesTestMixin, FormView
     def enviar_notificacion_correo(self, excel_file, nuevos_registros):
         """Envía un correo electrónico con la notificación de carga masiva"""
         try:
-            accion = "Carga de datos masivos"
-            modelo = "Proyector"
-            mensaje = f"""
-            El usuario {self.request.user.get_full_name()} ha realizado la siguiente acción:
-            Acción: {accion}
-            Modelo: {modelo}
-            Registros nuevos añadidos: {nuevos_registros}
-            """
+            from adr.email_template import notificacion_carga_masiva
+
+            user_name = self.request.user.get_full_name() or self.request.user.username
+            html, plain = notificacion_carga_masiva(user_name, 'Proyector', nuevos_registros)
 
             email = EmailMessage(
-                subject="Carga de Datos Masivos en Proyector",
-                body=mensaje,
+                subject='Carga de Datos Masivos en Proyector',
+                body=plain,
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 to=settings.EMAIL_RECIPIENTS
             )
+            email.content_subtype = 'html'
+            email.body = html
 
-            # Adjuntar el archivo Excel subido
-            excel_file.seek(0)  # Asegurarse de que el archivo esté en el inicio
+            excel_file.seek(0)
             email.attach(excel_file.name, excel_file.read(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
             email.send()
-            logger.info("Correo de notificación enviado exitosamente.")
+            logger.info('Correo de notificación enviado exitosamente.')
         except Exception as e:
-            logger.error(f"Error al enviar correo de notificación: {str(e)}")
+            logger.error(f'Error al enviar correo de notificación: {str(e)}')
 
 
 
@@ -5088,30 +5112,27 @@ class UploadExcelBodegaADRView(LoginRequiredMixin, UserPassesTestMixin, FormView
     def enviar_notificacion_correo(self, excel_file, nuevos_registros):
         """Envía un correo electrónico con la notificación de carga masiva"""
         try:
-            accion = "Carga de datos masivos"
-            modelo = "Bodega ADR"
-            mensaje = f"""
-            El usuario {self.request.user.get_full_name()} ha realizado la siguiente acción:
-            Acción: {accion}
-            Modelo: {modelo}
-            Registros nuevos añadidos: {nuevos_registros}
-            """
+            from adr.email_template import notificacion_carga_masiva
+
+            user_name = self.request.user.get_full_name() or self.request.user.username
+            html, plain = notificacion_carga_masiva(user_name, 'Bodega ADR', nuevos_registros)
 
             email = EmailMessage(
-                subject="Carga de Datos Masivos en Bodega ADR",
-                body=mensaje,
+                subject='Carga de Datos Masivos en Bodega ADR',
+                body=plain,
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 to=settings.EMAIL_RECIPIENTS
             )
+            email.content_subtype = 'html'
+            email.body = html
 
-            # Adjuntar el archivo Excel subido
-            excel_file.seek(0)  # Asegurarse de que el archivo esté en el inicio
+            excel_file.seek(0)
             email.attach(excel_file.name, excel_file.read(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
             email.send()
-            logger.info("Correo de notificación enviado exitosamente.")
+            logger.info('Correo de notificación enviado exitosamente.')
         except Exception as e:
-            logger.error(f"Error al enviar correo de notificación: {str(e)}")
+            logger.error(f'Error al enviar correo de notificación: {str(e)}')
 
 
 
@@ -5252,30 +5273,27 @@ class UploadExcelAzoteaView(LoginRequiredMixin, UserPassesTestMixin, FormView):
     def enviar_notificacion_correo(self, excel_file, nuevos_registros):
         """Envía un correo electrónico con la notificación de carga masiva"""
         try:
-            accion = "Carga de datos masivos"
-            modelo = "Azotea ADR"
-            mensaje = f"""
-            El usuario {self.request.user.get_full_name()} ha realizado la siguiente acción:
-            Acción: {accion}
-            Modelo: {modelo}
-            Registros nuevos añadidos: {nuevos_registros}
-            """
+            from adr.email_template import notificacion_carga_masiva
+
+            user_name = self.request.user.get_full_name() or self.request.user.username
+            html, plain = notificacion_carga_masiva(user_name, 'Azotea ADR', nuevos_registros)
 
             email = EmailMessage(
-                subject="Carga de Datos Masivos en Azotea ADR",
-                body=mensaje,
+                subject='Carga de Datos Masivos en Azotea ADR',
+                body=plain,
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 to=settings.EMAIL_RECIPIENTS
             )
+            email.content_subtype = 'html'
+            email.body = html
 
-            # Adjuntar el archivo Excel subido
-            excel_file.seek(0)  # Asegurarse de que el archivo esté en el inicio
+            excel_file.seek(0)
             email.attach(excel_file.name, excel_file.read(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
             email.send()
-            logger.info("Correo de notificación enviado exitosamente.")
+            logger.info('Correo de notificación enviado exitosamente.')
         except Exception as e:
-            logger.error(f"Error al enviar correo de notificación: {str(e)}")
+            logger.error(f'Error al enviar correo de notificación: {str(e)}')
 
     def form_invalid(self, form):
         """Manejo de formulario inválido"""
@@ -5393,30 +5411,27 @@ class UploadExcelAllInOneAdmView(LoginRequiredMixin, UserPassesTestMixin, FormVi
     def enviar_notificacion_correo(self, excel_file, nuevos_registros):
         """Envía un correo electrónico con la notificación de carga masiva"""
         try:
-            accion = "Carga de datos masivos"
-            modelo = "All In One Admin"
-            mensaje = f"""
-            El usuario {self.request.user.get_full_name()} ha realizado la siguiente acción:
-            Acción: {accion}
-            Modelo: {modelo}
-            Registros nuevos añadidos: {nuevos_registros}
-            """
+            from adr.email_template import notificacion_carga_masiva
+
+            user_name = self.request.user.get_full_name() or self.request.user.username
+            html, plain = notificacion_carga_masiva(user_name, 'All In One Admin', nuevos_registros)
 
             email = EmailMessage(
-                subject="Carga de Datos Masivos en All In One Admin",
-                body=mensaje,
+                subject='Carga de Datos Masivos en All In One Admin',
+                body=plain,
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 to=settings.EMAIL_RECIPIENTS
             )
+            email.content_subtype = 'html'
+            email.body = html
 
-            # Adjuntar el archivo Excel subido
-            excel_file.seek(0)  # Asegurarse de que el archivo esté en el inicio
+            excel_file.seek(0)
             email.attach(excel_file.name, excel_file.read(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
             email.send()
-            logger.info("Correo de notificación enviado exitosamente.")
+            logger.info('Correo de notificación enviado exitosamente.')
         except Exception as e:
-            logger.error(f"Error al enviar correo de notificación: {str(e)}")
+            logger.error(f'Error al enviar correo de notificación: {str(e)}')
 
 import re
 from decimal import Decimal, InvalidOperation # Asegúrate que estas importaciones estén al inicio del archivo si no lo están ya.
