@@ -1626,7 +1626,7 @@ class DeleteToEliminadosView(LoginRequiredMixin, UserPassesTestMixin, View):
                 # Intentar guardar los datos en la tabla Eliminados
                 # Usar getattr para todos los campos opcionales para evitar AttributeError en modelos que no los tengan
                 eliminado_data = {
-                    'activo': model_name.title(),
+                    'activo': model._meta.verbose_name,
                     'modelo': getattr(instance, 'modelo', 'Desconocido'),
                     'n_serie': getattr(instance, 'n_serie', '') or '', # Asegura cadena vacía si es None
                     'etiqueta': getattr(instance, 'etiqueta', None),

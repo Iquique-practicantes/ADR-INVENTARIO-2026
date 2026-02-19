@@ -165,7 +165,7 @@ def notificacion_equipo(
         (html_content, plain_text_content)
     """
     if not fecha:
-        fecha = timezone.now().strftime('%d/%m/%Y %H:%M')
+        fecha = timezone.localtime().strftime('%d/%m/%Y %H:%M')
 
     contenido = f"""\
     <p style="margin:0 0 8px 0; font-size:15px; color:#374151; line-height:1.6;">
@@ -221,7 +221,7 @@ def notificacion_usuario(
     Returns:
         (html_content, plain_text_content)
     """
-    fecha = timezone.now().strftime('%d/%m/%Y %H:%M')
+    fecha = timezone.localtime().strftime('%d/%m/%Y %H:%M')
 
     contenido = f"""\
     <p style="margin:0 0 8px 0; font-size:15px; color:#374151; line-height:1.6;">
@@ -267,7 +267,7 @@ def notificacion_carga_masiva(
     Returns:
         (html_content, plain_text_content)
     """
-    fecha = timezone.now().strftime('%d/%m/%Y %H:%M')
+    fecha = timezone.localtime().strftime('%d/%m/%Y %H:%M')
 
     contenido = f"""\
     <p style="margin:0 0 8px 0; font-size:15px; color:#374151; line-height:1.6;">

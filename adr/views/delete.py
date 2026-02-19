@@ -85,7 +85,7 @@ class DeleteToEliminadosView(LoginRequiredMixin, UserPassesTestMixin, View):
             with transaction.atomic():
                 # Crear registro en Eliminados
                 eliminado_data = {
-                    'activo': model_name.title(),
+                    'activo': model._meta.verbose_name,
                     'modelo': getattr(instance, 'modelo', 'Desconocido'),
                     'n_serie': getattr(instance, 'n_serie', '') or '',
                     'etiqueta': getattr(instance, 'etiqueta', None),
@@ -152,16 +152,18 @@ class DeleteToEliminadosView(LoginRequiredMixin, UserPassesTestMixin, View):
             if model_name in ('monitor', 'notebook'):
                 datos.append(('Asignado a', str(getattr(instance, 'asignado_a', 'N/A'))))
 
+            verbose = MODELS_DICT[model_name]._meta.verbose_name
+
             html, plain = notificacion_equipo(
                 accion=f"Eliminación — Movido a Eliminados",
                 usuario_nombre=user_name,
                 usuario_grupo=user_group,
-                modelo_nombre=model_name.replace('_', ' ').title(),
+                modelo_nombre=str(verbose).title(),
                 datos_registro=datos,
             )
 
             enviar_notificacion_asunto(
-                asunto=f"Registro Movido a Eliminados — {model_name.replace('_', ' ').title()}",
+                asunto=f"Registro Movido a Eliminados — {verbose}",
                 mensaje=plain,
                 destinatarios=settings.EMAIL_RECIPIENTS,
                 html_content=html,
