@@ -1415,6 +1415,11 @@ MODELS_DICT = {
     'televisor': Televisor,
 }
 
+# Reverse lookup: verbose_name → model (para restauración con nuevo formato)
+VERBOSE_TO_MODEL = {
+    m._meta.verbose_name.lower(): m for m in MODELS_DICT.values()
+}
+
 
 @add_group_name_to_context
 class EliminadosListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
@@ -1487,12 +1492,16 @@ class ConfirmarRestauracionView(LoginRequiredMixin, UserPassesTestMixin, DetailV
     def post(self, request, *args, **kwargs):
         """Restaurar el registro de Eliminados a su tabla original"""
         registro = self.get_object()
-        # Ajustar el nombre del modelo eliminando espacios y poniéndolo en minúsculas
-        model_name = registro.activo.lower().replace(' ', '')
-        model = MODELS_DICT.get(model_name)
+        # Primero intentar con verbose_name (nuevo formato), luego con clave antigua
+        activo_lower = registro.activo.lower()
+        model = VERBOSE_TO_MODEL.get(activo_lower)
+        if not model:
+            # Fallback: formato antiguo (quitar espacios, buscar en MODELS_DICT)
+            model_name = activo_lower.replace(' ', '')
+            model = MODELS_DICT.get(model_name)
 
         if not model:
-            messages.error(request, f'Modelo no encontrado para restaurar: {model_name}')
+            messages.error(request, f'Modelo no encontrado para restaurar: {registro.activo}')
             return redirect('eliminados')
 
         try:
