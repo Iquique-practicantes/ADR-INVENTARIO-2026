@@ -18,6 +18,71 @@ from adr.models import (
     Eliminados, HistorialCambios
 )
 
+# ── Definición de columnas (header, field_name) ──────────────
+# Orden idéntico al de las tablas en la web
+BASE_COLUMNS = [
+    ('#',                  '_row_number'),
+    ('Activo',             'activo'),
+    ('Estado',             'estado'),
+    ('Marca',              'marca'),
+    ('Modelo',             'modelo'),
+    ('N° Serie',           'n_serie'),
+    ('Etiqueta',           'etiqueta'),
+    ('BDO',                'bdo'),
+    ('NetBios',            'netbios'),
+    ('Ubicación',          'ubicacion'),
+    ('Registrado por',     'creado_por'),
+    ('Fecha Creación',     'fecha_creacion'),
+    ('Fecha Modificación', 'fecha_modificacion'),
+]
+
+# Modelos con campo asignado_a (Notebook, Monitor)
+COLUMNS_ASIGNADO = [
+    ('#',                  '_row_number'),
+    ('Activo',             'activo'),
+    ('Estado',             'estado'),
+    ('Marca',              'marca'),
+    ('Modelo',             'modelo'),
+    ('N° Serie',           'n_serie'),
+    ('Etiqueta',           'etiqueta'),
+    ('BDO',                'bdo'),
+    ('NetBios',            'netbios'),
+    ('Ubicación',          'ubicacion'),
+    ('Asignado a',         'asignado_a'),
+    ('Registrado por',     'creado_por'),
+    ('Fecha Creación',     'fecha_creacion'),
+    ('Fecha Modificación', 'fecha_modificacion'),
+]
+
+# Mapeo modelo → columnas personalizadas
+COLUMN_MAP = {
+    'notebook': COLUMNS_ASIGNADO,
+    'monitor':  COLUMNS_ASIGNADO,
+}
+
+# Modelos que usan la exportación genérica (todos los campos del modelo)
+GENERIC_MODELS = {'eliminados', 'historialcambios'}
+
+
+def _resolve_cell(obj, field_name, row_idx):
+    """Resuelve el valor de una celda según el tipo de campo."""
+    if field_name == '_row_number':
+        return row_idx
+
+    if field_name in ('creado_por', 'eliminado_por', 'usuario'):
+        user = getattr(obj, field_name, None)
+        if user is None:
+            return 'Admin' if field_name == 'creado_por' else ''
+        name = user.get_full_name()
+        return name if name.strip() else user.username
+
+    if field_name in ('fecha_creacion', 'fecha_modificacion', 'fecha_eliminacion'):
+        val = getattr(obj, field_name, None)
+        return val.strftime('%d/%m/%Y') if val else ''
+
+    val = getattr(obj, field_name, None)
+    return str(val) if val is not None else ''
+
 
 @add_group_name_to_context
 class DescargarExcelView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
@@ -66,38 +131,63 @@ class DescargarExcelView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         # Aplicar filtro de búsqueda si existe
         search_query = request.GET.get('search', '').strip()
         if search_query:
-            queryset = model_class.objects.filter(
-                Q(activo__icontains=search_query) |
-                Q(marca__icontains=search_query) |
-                Q(modelo__icontains=search_query) |
-                Q(n_serie__icontains=search_query) |
-                Q(etiqueta__icontains=search_query) |
-                Q(bdo__icontains=search_query) |
-                Q(netbios__icontains=search_query) |
-                Q(ubicacion__icontains=search_query) |
-                Q(creado_por__first_name__icontains=search_query) |
-                Q(creado_por__last_name__icontains=search_query)
-            )
+            # Construir filtro dinámicamente según los campos disponibles
+            q_filters = Q()
+            search_fields = [
+                'activo', 'marca', 'modelo', 'n_serie',
+                'etiqueta', 'ubicacion',
+            ]
+            for sf in search_fields:
+                if any(f.name == sf for f in model_class._meta.fields):
+                    q_filters |= Q(**{f'{sf}__icontains': search_query})
+            # Campos opcionales
+            if any(f.name == 'netbios' for f in model_class._meta.fields):
+                q_filters |= Q(netbios__icontains=search_query)
+            if any(f.name == 'bdo' for f in model_class._meta.fields):
+                q_filters |= Q(bdo__icontains=search_query)
+            # Búsqueda por nombre de usuario creador
+            if any(f.name == 'creado_por' for f in model_class._meta.fields):
+                q_filters |= (
+                    Q(creado_por__first_name__icontains=search_query) |
+                    Q(creado_por__last_name__icontains=search_query)
+                )
+            queryset = model_class.objects.filter(q_filters)
         else:
             queryset = model_class.objects.all()
+
+        # select_related para evitar N+1 queries en ForeignKeys
+        fk_fields = []
+        for f in model_class._meta.fields:
+            if f.is_relation and f.name in ('creado_por', 'eliminado_por', 'usuario'):
+                fk_fields.append(f.name)
+        if fk_fields:
+            queryset = queryset.select_related(*fk_fields)
+
+        # Elegir columnas
+        if model_name in GENERIC_MODELS:
+            columns_raw = [field.name for field in model_class._meta.fields]
+            columns = [(col.replace('_', ' ').title(), col) for col in columns_raw]
+        else:
+            columns = COLUMN_MAP.get(model_name, BASE_COLUMNS)
 
         # Crear archivo Excel
         wb = Workbook()
         ws = wb.active
         ws.title = model_name.capitalize()
 
-        # Agregar encabezados
-        columns = [field.name for field in model_class._meta.fields]
-        for col_num, column_title in enumerate(columns, 1):
-            column_letter = get_column_letter(col_num)
-            ws[f"{column_letter}1"] = column_title.capitalize()
+        # Encabezados
+        for col_num, (header, _) in enumerate(columns, 1):
+            ws[f"{get_column_letter(col_num)}1"] = header
 
-        # Rellenar datos
+        # Datos
         for row_num, obj in enumerate(queryset, 2):
-            for col_num, field_name in enumerate(columns, 1):
-                column_letter = get_column_letter(col_num)
-                field_value = getattr(obj, field_name)
-                ws[f"{column_letter}{row_num}"] = str(field_value) if field_value is not None else ''
+            row_idx = row_num - 1  # Número secuencial empezando en 1
+            for col_num, (_, field_name) in enumerate(columns, 1):
+                col_letter = get_column_letter(col_num)
+                try:
+                    ws[f"{col_letter}{row_num}"] = _resolve_cell(obj, field_name, row_idx)
+                except Exception:
+                    ws[f"{col_letter}{row_num}"] = ''
 
         # Configurar respuesta HTTP
         response = HttpResponse(
