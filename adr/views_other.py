@@ -198,6 +198,10 @@ class DescargarExcelView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         else:
             queryset = model_class.objects.all()
 
+        # Añadir select_related para evitar N+1 queries en creado_por
+        if hasattr(model_class, 'creado_por'):
+            queryset = queryset.select_related('creado_por')
+
         # ── Definición de columnas por modelo ──────────────────────
         # Cada entrada: (header_excel, field_name_or_callable)
         # 'field_name' se resolverá con getattr(obj, field_name)
@@ -265,27 +269,38 @@ class DescargarExcelView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
             for col_num, (header, field_name) in enumerate(columns, 1):
                 col_letter = get_column_letter(col_num)
 
-                if field_name == '_row_number':
-                    # Número secuencial (#)
-                    ws[f"{col_letter}{row_num}"] = row_num - 1
-                elif field_name == 'creado_por':
-                    # Resolver FK a nombre legible
-                    user = getattr(obj, 'creado_por', None)
-                    if user:
-                        name = user.get_full_name()
-                        ws[f"{col_letter}{row_num}"] = name if name.strip() else user.username
+                try:
+                    if field_name == '_row_number':
+                        # Número secuencial (#)
+                        ws[f"{col_letter}{row_num}"] = row_num - 1
+                    elif field_name == 'creado_por':
+                        # Resolver FK a nombre legible
+                        user = getattr(obj, 'creado_por', None)
+                        if user:
+                            name = user.get_full_name()
+                            ws[f"{col_letter}{row_num}"] = name if name.strip() else user.username
+                        else:
+                            ws[f"{col_letter}{row_num}"] = 'Admin'
+                    elif field_name in ('fecha_creacion', 'fecha_modificacion', 'fecha_eliminacion'):
+                        # Formato de fecha legible
+                        val = getattr(obj, field_name, None)
+                        if val:
+                            ws[f"{col_letter}{row_num}"] = val.strftime('%d/%m/%Y')
+                        else:
+                            ws[f"{col_letter}{row_num}"] = ''
+                    elif field_name in ('eliminado_por', 'usuario'):
+                        # Otros FK de usuario (Eliminados, HistorialCambios)
+                        user = getattr(obj, field_name, None)
+                        if user:
+                            name = user.get_full_name()
+                            ws[f"{col_letter}{row_num}"] = name if name.strip() else user.username
+                        else:
+                            ws[f"{col_letter}{row_num}"] = ''
                     else:
-                        ws[f"{col_letter}{row_num}"] = 'Admin'
-                elif field_name in ('fecha_creacion', 'fecha_modificacion'):
-                    # Formato de fecha legible
-                    val = getattr(obj, field_name, None)
-                    if val:
-                        ws[f"{col_letter}{row_num}"] = val.strftime('%d/%m/%Y')
-                    else:
-                        ws[f"{col_letter}{row_num}"] = ''
-                else:
-                    field_value = getattr(obj, field_name, None)
-                    ws[f"{col_letter}{row_num}"] = str(field_value) if field_value is not None else ''
+                        field_value = getattr(obj, field_name, None)
+                        ws[f"{col_letter}{row_num}"] = str(field_value) if field_value is not None else ''
+                except Exception:
+                    ws[f"{col_letter}{row_num}"] = ''
 
         # Configura la respuesta HTTP para la descarga
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
