@@ -138,25 +138,40 @@ class Command(BaseCommand):
         wb.save(output)
         output.seek(0)
 
-        # Enviar correo
-        date_str = datetime.now().strftime('%Y-%m-%d')
-        filename = f'Inventario_ADR_{date_str}.xlsx'
-
-        subject = f'Reporte de Inventario ADR - {date_str}'
-        body = f'Adjunto encontrará el reporte actualizado del inventario con {models_processed} categorías de equipos.'
+        # Preparar datos del correo HTML
+        date_str = datetime.now().strftime('%d/%m/%Y')
+        filename = f'Inventario_ADR_{datetime.now().strftime("%Y-%m-%d")}.xlsx'
+        subject = f'Backup Inventario - {date_str}'
         to_emails = settings.EMAIL_RECIPIENTS
+
+        # Generar HTML con resumen de categorías
+        from adr.email_template import notificacion_backup
+
+        categorias = []
+        total_registros = 0
+        for key, model_class, sheet_name, columns in MODELS_CONFIG:
+            count = model_class.objects.count()
+            categorias.append((sheet_name, count))
+            total_registros += count
+
+        html_content, plain_text = notificacion_backup(
+            fecha=date_str,
+            categorias=categorias,
+            total_registros=total_registros,
+        )
 
         # DEBUG: Mostrar lista completa de destinatarios
         self.stdout.write(self.style.WARNING(f'DEBUG - Lista de destinatarios configurada: {to_emails}'))
         self.stdout.write(self.style.WARNING(f'DEBUG - Total de destinatarios: {len(to_emails)}'))
 
-        # Crear y enviar el correo
+        # Crear y enviar el correo HTML
         email = EmailMessage(
             subject=subject,
-            body=body,
+            body=html_content,
             from_email=settings.DEFAULT_FROM_EMAIL,
             to=to_emails
         )
+        email.content_subtype = 'html'
 
         email.attach(filename, output.getvalue(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 

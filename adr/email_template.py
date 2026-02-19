@@ -127,6 +127,7 @@ def _badge_accion(accion: str) -> str:
         'creacion':      ('#eff6ff', '#1e40af', '#bfdbfe'),
         'carga masiva':  ('#f5f3ff', '#5b21b6', '#ddd6fe'),
         'alerta':        ('#fff7ed', '#9a3412', '#fed7aa'),
+        'backup':        ('#f0fdfa', '#115e59', '#99f6e4'),
     }
 
     bg, text, border = ('#f3f4f6', '#374151', '#d1d5db')  # default gris
@@ -336,6 +337,96 @@ def notificacion_alerta_login(
         f"IP: {ip or 'desconocida'}\n"
         f"User-Agent: {user_agent}\n"
         f"Fecha/Hora: {fecha}\n"
+    )
+
+    return html, plain
+
+
+def notificacion_backup(
+    fecha: str,
+    categorias: list[tuple[str, int]],
+    total_registros: int,
+) -> tuple[str, str]:
+    """
+    Genera HTML y texto plano para el correo de backup/reporte semanal.
+
+    Args:
+        fecha: Fecha del backup (dd/mm/yyyy)
+        categorias: Lista de tuplas (nombre_categoria, cantidad_registros)
+        total_registros: Total de registros en todas las categorías
+
+    Returns:
+        (html_content, plain_text_content)
+    """
+    # Tabla de categorías con columnas Categoría | Registros
+    filas = ""
+    for i, (nombre, cantidad) in enumerate(categorias):
+        bg = "#f9fafb" if i % 2 == 0 else "#ffffff"
+        filas += f"""\
+          <tr style="background-color:{bg};">
+            <td style="padding:10px 14px; font-size:13px; color:#1f2937; border-bottom:1px solid #e5e7eb;">
+              {nombre}
+            </td>
+            <td style="padding:10px 14px; font-size:13px; color:#1f2937; border-bottom:1px solid #e5e7eb; text-align:center; font-weight:600;">
+              {cantidad}
+            </td>
+          </tr>"""
+
+    # Fila total
+    filas += f"""\
+          <tr style="background-color:#dc2626;">
+            <td style="padding:10px 14px; font-size:13px; color:#ffffff; font-weight:700;">
+              Total de Registros
+            </td>
+            <td style="padding:10px 14px; font-size:13px; color:#ffffff; text-align:center; font-weight:700;">
+              {total_registros}
+            </td>
+          </tr>"""
+
+    tabla_categorias = f"""\
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+           style="border:1px solid #e5e7eb; border-radius:6px; overflow:hidden; margin:16px 0;">
+      <tr style="background-color:#1f2937;">
+        <td style="padding:10px 14px; font-size:12px; color:#ffffff; font-weight:700; text-transform:uppercase; letter-spacing:1px; border-bottom:2px solid #dc2626;">
+          Categoría
+        </td>
+        <td style="padding:10px 14px; font-size:12px; color:#ffffff; font-weight:700; text-transform:uppercase; letter-spacing:1px; text-align:center; border-bottom:2px solid #dc2626;">
+          Registros
+        </td>
+      </tr>
+      {filas}
+    </table>"""
+
+    contenido = f"""\
+    <p style="margin:0 0 8px 0; font-size:15px; color:#374151; line-height:1.6;">
+      Estimados,
+    </p>
+    <p style="margin:0 0 16px 0; font-size:14px; color:#4b5563; line-height:1.6;">
+      Adjunto encontrará el <strong>backup del inventario</strong> correspondiente al
+      <strong>{fecha}</strong>, con el detalle de todos los equipos registrados en la plataforma.
+    </p>
+
+    {_badge_accion('Backup de Inventario')}
+
+    <p style="margin:16px 0 8px 0; font-size:14px; font-weight:600; color:#374151;">
+      Resumen por categoría:
+    </p>
+
+    {tabla_categorias}
+
+    <p style="margin:16px 0 0 0; font-size:13px; color:#6b7280; line-height:1.5;">
+      El archivo Excel adjunto contiene una hoja por cada categoría con el detalle completo de los registros.
+    </p>"""
+
+    html = _base_html(contenido)
+
+    # Texto plano
+    lineas_txt = [f"  - {nombre}: {cant} registros" for nombre, cant in categorias]
+    plain = (
+        f"Backup de Inventario — {fecha}\n\n"
+        f"Adjunto encontrará el backup del inventario con {len(categorias)} categorías de equipos.\n\n"
+        f"Resumen por categoría:\n" + "\n".join(lineas_txt) + "\n\n"
+        f"Total de registros: {total_registros}\n"
     )
 
     return html, plain
