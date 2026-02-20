@@ -47,33 +47,12 @@
             </a>
           </div>
         </div>
-
-        {# Select Estado #}
-        <div class="flex flex-col md:ml-3">
-          <label for="estado" class="font-semibold text-gray-700">Estado</label>
-          <select name="estado" id="estado"
-            class="block w-full rounded-sm bg-gray-200 px-2 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-600"
-            onchange="this.form.submit()">
-            <option value="" {% if not request.GET.estado %}selected{% endif %}>Todos</option>
-            <option value="Operativo" {% if request.GET.estado == 'Operativo' %}selected{% endif %}>Operativo</option>
-            <option value="Dañado" {% if request.GET.estado == 'Dañado' %}selected{% endif %}>Dañado</option>
-            <option value="De Baja" {% if request.GET.estado == 'De Baja' %}selected{% endif %}>De Baja</option>
-          </select>
-        </div>
-
-        {# Botones Filtrar / Limpiar #}
-        <div class="flex items-end gap-3 md:ml-3">
-          <button type="submit"
-            class="w-full sm:w-auto bg-red-700 hover:bg-red-600 text-white px-4 py-2 rounded transition">Filtrar</button>
-          {% if request.GET %}
-          <a href="{% url 'monitor_list' %}" class="text-sm text-gray-600 hover:underline">Limpiar</a>
-          {% endif %}
-        </div>
       </form>
 
       {# Derecha: botones verdes alineados (mismos alto h-10) #}
       {% if page_obj %}
-      <div class="flex gap-3 md:ml-6 shrink-0"> {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' %}
+      <div class="flex gap-3 md:ml-6 shrink-0"> {% if group_name_singular == 'ADR' or group_name_singular == 'Operador
+        ADR' %}
         <a href="{% url 'add_monitor' %}"
           class="inline-flex items-center justify-center px-3 h-9 text-sm rounded bg-gradient-to-br from-red-600 to-red-900 hover:from-red-500 hover:to-red-700 text-white shadow-sm">
           <i class="fas fa-plus"></i> Agregar Activo
@@ -217,7 +196,8 @@
         <tbody class="divide-y divide-gray-200 text-sm">
           {% for monitor in page_obj %}
           <tr class="hover:bg-gray-50 align-top">
-            <td class="px-1 py-1 text-center text-gray-600 font-mono text-xs">{{ forloop.counter0|add:page_obj.start_index }}</td>
+            <td class="px-1 py-1 text-center text-gray-600 font-mono text-xs">{{
+              forloop.counter0|add:page_obj.start_index }}</td>
             <td class="px-1 py-1 break-words text-center">{{ monitor.activo|capfirst }}</td>
             <td class="px-1 py-1 text-center">
               {% if monitor.estado == 'Operativo' %}
@@ -235,7 +215,8 @@
             <td class="px-1 py-1 break-words text-center">{{ monitor.bdo }}</td>
             <td class="px-1 py-1 break-words text-center">{{ monitor.netbios|capfirst }}</td>
             <td class="px-1 py-1 break-words text-center">{{ monitor.ubicacion }}</td>
-            <td class="px-1 py-1 break-words text-center">{{ monitor.creado_por.get_full_name|default:monitor.creado_por.username }}</td>
+            <td class="px-1 py-1 break-words text-center">{{
+              monitor.creado_por.get_full_name|default:monitor.creado_por.username }}</td>
             <td class="px-1 py-1 break-words text-center">{{ monitor.fecha_creacion|date:"d/m/Y" }}</td>
             <td class="px-2 py-1 break-words text-center">{{ monitor.fecha_modificacion|date:"d/m/Y" }}</td>
             <td class="px-1 py-1 break-words text-center">{{ monitor.asignado_a|default:'—' }}</td>
