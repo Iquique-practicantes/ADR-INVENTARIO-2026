@@ -51,8 +51,7 @@
 
       {# Derecha: botones verdes alineados (mismos alto h-10) #}
       {% if page_obj %}
-      <div class="flex gap-3 md:ml-6 shrink-0"> {% if group_name_singular == 'ADR' or group_name_singular == 'Operador
-        ADR' %}
+      <div class="flex gap-3 md:ml-6 shrink-0"> {% if group_name_singular == 'ADR' or group_name_singular == 'Operador ADR' %}
         <a href="{% url 'add_monitor' %}"
           class="inline-flex items-center justify-center px-3 h-9 text-sm rounded bg-gradient-to-br from-red-600 to-red-900 hover:from-red-500 hover:to-red-700 text-white shadow-sm">
           <i class="fas fa-plus"></i> Agregar Activo
